@@ -184,10 +184,12 @@ func TestPrefixSnapshotCapacityPlacement(t *testing.T) {
 	}
 }
 
-// A modified branch below a nonresident parent uses canonical Hash storage.
-// Siblings outside that subtree retain Prefix; unchanged descendants needed
-// for Hash traversal are counted explicitly as closure backfill.
-func TestColdBranchModificationHashClosureAndHistory(t *testing.T) {
+// A node modified below a nonresident parent switches to canonical Hash storage
+// only when every non-inline child is already Hash-resolvable. A branch with an
+// unchanged Prefix-only child keeps a mixed-reference Prefix record: its modified
+// child is Hash, its untouched child remains Prefix, and no Hash copy of the
+// untouched subtree is written (no closure backfill, no duplicate storage).
+func TestColdBranchModificationKeepsMixedReferencesAndHistory(t *testing.T) {
 	cfg := DefaultConfig("raw-bytes/v1", "cold-branch-modification")
 	opt := kvstore.DefaultOptions(kvstore.LevelDB)
 	cfg.Storage = &opt
@@ -240,8 +242,8 @@ func TestColdBranchModificationHashClosureAndHistory(t *testing.T) {
 		head, stats, err = block.Commit()
 		check(err)
 		if height == 2 {
-			if stats.HashRecords != 3 || stats.ClosureBackfillRecords != 1 {
-				t.Fatalf("changed branch and leaf plus one unchanged Hash descendant: %+v", stats)
+			if stats.HashRecords != 1 || stats.PrefixRecords != 3 || stats.ClosureBackfillRecords != 0 || stats.ClosureBackfillBytes != 0 {
+				t.Fatalf("only the modified leaf uses Hash; branches stay Prefix without backfill: %+v", stats)
 			}
 		} else if stats.HashRecords != 0 || stats.PrefixRecords != 0 {
 			t.Fatalf("read/reverted update rewrote nodes: %+v", stats)
@@ -261,10 +263,19 @@ func TestColdBranchModificationHashClosureAndHistory(t *testing.T) {
 	check(err)
 	record, err := DecodeRecord(raw)
 	check(err)
-	if record.Children[0].Kind != Hash || record.Children[1].Kind != Prefix {
-		t.Fatal("mixed cold parent", record)
+	if record.Children[0].Kind != Prefix || record.Children[1].Kind != Prefix {
+		t.Fatal("cold parent must reference its Prefix-written child", record)
 	}
-	for _, path := range [][]byte{{1, 0}, {1, 0, 0}, {1, 0, 1}, {1, 1}} {
+	key, err = EncodeNodeKey(NodeKey{0, []byte{1, 0}, 2})
+	check(err)
+	raw, err = snapshot.get(prefixColumn, key)
+	check(err)
+	record, err = DecodeRecord(raw)
+	check(err)
+	if record.Children[0].Kind != Hash || record.Children[1].Kind != Prefix {
+		t.Fatal("modified child must be Hash while the untouched sibling keeps Prefix", record)
+	}
+	for _, path := range [][]byte{{1, 0, 0}, {1, 0, 1}, {1, 1}} {
 		key, err := EncodeNodeKey(NodeKey{0, path, 2})
 		check(err)
 		if _, err = snapshot.get(prefixColumn, key); !errors.Is(err, ErrNotFound) {
@@ -285,6 +296,94 @@ func TestColdBranchModificationHashClosureAndHistory(t *testing.T) {
 			}
 			if !found || !bytes.Equal(got, bytes.Repeat([]byte{want}, 48)) {
 				t.Fatal("historical value", h, i, got)
+			}
+		}
+		check(view.Close())
+	}
+}
+
+// Randomized cold updates over many blocks never copy unchanged descendants to
+// the Hash column, yet every historical value and proof still verifies.
+func TestColdUpdatesNeverBackfillAndRemainVerifiable(t *testing.T) {
+	cfg := DefaultConfig("raw-bytes/v1", "cold-no-backfill")
+	opt := kvstore.DefaultOptions(kvstore.LevelDB)
+	cfg.Storage = &opt
+	db, err := Open(filepath.Join(t.TempDir(), "db"), cfg, true, false)
+	check := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	check(err)
+	defer db.Close()
+	tree, err := mpt.NewEmpty(mpt.NewMemoryStore())
+	check(err)
+	const keyCount = 300
+	keyOf := func(i int) []byte { return []byte{byte(i * 7), byte(i * 13 >> 3), byte(i)} }
+	values := make([][]byte, keyCount)
+	versions := make([][][]byte, 0, 32)
+	snapshotValues := func() [][]byte { return append([][]byte(nil), values...) }
+	for i := 0; i < keyCount; i++ {
+		values[i] = bytes.Repeat([]byte{byte(i)}, 40)
+		check(tree.Update(keyOf(i), values[i]))
+	}
+	head, _, err := db.Commit(0, [32]byte{}, []TrieUpdate{{Tree: tree, PrefixMask: 0xffff}})
+	check(err)
+	root, err := tree.Hash()
+	check(err)
+	roots := []mpt.Hash{root}
+	versions = append(versions, snapshotValues())
+	cache := DefaultPrefixBoundaryForestCacheConfig()
+	allocation, err := BoundaryCacheAllocation(cache.Boundary)
+	check(err)
+	cache.Boundary.NodeBudget = ClassBudget{TotalBytes: allocation.Boundary.SlotBytes}
+	cache.Boundary.PolicyIntervalBlocks = 1
+	forest, err := OpenCachedForest(db, cache)
+	check(err)
+	defer forest.Close()
+	seed := uint32(12345)
+	next := func(n int) int { seed = seed*1664525 + 1013904223; return int(seed>>8) % n }
+	var hashRecords, prefixRecords uint64
+	for height := uint64(1); height <= 40; height++ {
+		block, err := forest.BeginBlock(height, head.CommitID)
+		check(err)
+		reader, err := block.TrieReader(0, root)
+		check(err)
+		working, err := mpt.Open(root, reader)
+		check(err)
+		for n := 0; n < 3; n++ {
+			i := next(keyCount)
+			values[i] = bytes.Repeat([]byte{byte(height), byte(n)}, 20)
+			check(working.Update(keyOf(i), values[i]))
+		}
+		check(block.SetTrie(0, working))
+		var stats CommitStats
+		head, stats, err = block.Commit()
+		check(err)
+		if stats.ClosureBackfillRecords != 0 || stats.ClosureBackfillBytes != 0 {
+			t.Fatalf("height %d copied unchanged descendants to Hash: %+v", height, stats)
+		}
+		hashRecords += stats.HashRecords
+		prefixRecords += stats.PrefixRecords
+		root, err = working.Hash()
+		check(err)
+		roots = append(roots, root)
+		versions = append(versions, snapshotValues())
+	}
+	if hashRecords == 0 {
+		t.Fatal("cold modification never used Hash; fixture does not exercise conversion", prefixRecords)
+	}
+	for h, root := range roots {
+		view, err := db.ViewAt(uint64(h))
+		check(err)
+		for i := 0; i < keyCount; i += 7 {
+			proof, err := view.Prove(0, root, keyOf(i))
+			check(err)
+			got, found, err := mpt.VerifyProof(root, keyOf(i), proof)
+			check(err)
+			if !found || !bytes.Equal(got, versions[h][i]) {
+				t.Fatal("historical value", h, i)
 			}
 		}
 		check(view.Close())

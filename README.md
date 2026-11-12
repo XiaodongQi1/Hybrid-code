@@ -202,16 +202,25 @@ digests and known Prefix heights. A known height permits an exact Get; an
 unknown height requires predecessor lookup.
 
 Eviction does not rewrite or delete persisted nodes. Once a parent is outside
-the protected cache boundary, a later logical update can place its modified
-children in Hash Store. Unchanged siblings retain their previous sources, so a
-Prefix parent may contain both Prefix and Hash references. Positions removed
-during the current commit preserve the pre-commit boundary rule.
+the protected cache boundary, a later logical update makes its modified
+children candidates for Hash Store. Unchanged siblings retain their previous
+sources, so a Prefix parent may contain both Prefix and Hash references.
+Positions removed during the current commit preserve the pre-commit boundary
+rule.
 
-Converting an internal subtree to canonical Hash storage can require Hash
-copies of unchanged descendants. `ClosureBackfillRecords` and
-`ClosureBackfillBytes` account for this work. Conversion occurs during logical
-modification, not eviction alone. Old Prefix versions remain available to
-historical parents; a newly converted version is not also written as Prefix.
+A canonical Hash body carries no per-child source, so every non-inline child of
+a Hash node must itself be reachable through Hash Store. A candidate is decided
+after its own children (post-order) and becomes Hash only if each child is a
+modified node stored as Hash in the same commit or an existing Hash body.
+Otherwise it is written as one Prefix record that keeps mixed references: its
+modified Hash children are Hash references and its unchanged children keep their
+existing Prefix or Hash source. Unchanged descendants are never copied, so cold
+placement adds no storage and `ClosureBackfillRecords` / `ClosureBackfillBytes`
+stay zero for it. In practice the conversion starts at modified leaves and
+rises while all siblings are already Hash. Those counters now measure only
+unchanged descendants copied for an explicit Hash reference requested by a
+layout selector. Old Prefix versions remain available to historical parents; a
+converted node is not also written as Prefix.
 
 ### Transaction execution and commits
 

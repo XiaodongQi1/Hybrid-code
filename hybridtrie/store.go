@@ -264,8 +264,12 @@ type CommitStats struct {
 	PrefixRecords, HashRecords, PrefixBytes, HashBytes, ClosureReads uint64
 	// Logical values returned by Hash Store probes, not physical disk read bytes.
 	ClosureReadBytes uint64
-	// Newly materialized Hash records outside this block's changed-node digests.
-	// These expose unchanged-subtree backfill, separately from changed-node copies.
+	// Newly materialized Hash records outside this block's changed-node digests:
+	// unchanged descendants copied so an explicitly requested Hash reference (a
+	// LayoutSelector that leaves an eligible child out of its Prefix mask) can be
+	// traversed. Cold-boundary placement never causes backfill: a modified node
+	// below a nonresident parent becomes Hash only when all its children already
+	// are Hash-resolvable, and otherwise keeps mixed Prefix/Hash references.
 	ClosureBackfillRecords, ClosureBackfillBytes uint64
 }
 
@@ -457,11 +461,19 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 			hashes  []mpt.Hash // Prefix edges in ascending slot order
 			record  Record
 			scratch uint64
+			// candidate marks a modified node below a nonresident parent that may
+			// switch to canonical Hash storage. Its physical form is decided only
+			// after its children are known (digest and rlp are kept for that write).
+			candidate bool
+			digest    mpt.Hash
+			rlp       []byte
 		}
 		var parents []prefixParent
 		// Positions are block-local. Eligibility alone does not cause a write:
-		// only a pending logical update converts a cold parent's child.
+		// only a pending logical update makes a cold parent's child a Hash
+		// candidate, and a candidate becomes Hash only if no child needs Prefix.
 		coldChildren := make(map[forestPosition]bool)
+		// hashRoots holds modified nodes this commit stores as canonical Hash.
 		hashRoots := make(map[forestPosition]bool)
 		hashCursor := u.Tree.CanonicalCursor()
 		// PendingLogicalNodes emits a preorder walk. Finalize a parent as
@@ -475,6 +487,10 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 			var e error
 			var edges [16]boundaryEdge
 			hashes := parent.hashes
+			// prefixChild reports whether any non-inline child must stay a Prefix
+			// reference. A Hash body has no per-child source, so a node can be
+			// stored as Hash only when every child is already Hash-resolvable.
+			prefixChild := false
 			for i, ref := range record.Children {
 				if ref.Kind != Prefix {
 					continue
@@ -494,6 +510,7 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 						return ErrHashMismatch
 					}
 					edges[i] = edgeAt(height, boundaryPrefix)
+					prefixChild = true
 					continue
 				}
 				if hashRoots[position(u.TrieID, loc.Target.Path)] {
@@ -522,7 +539,21 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 					p.stats.RetainedHashEdges++
 				} else {
 					edges[i] = edgeAt(route.height, boundaryPrefix)
+					prefixChild = true
 				}
+			}
+			if parent.candidate && !prefixChild {
+				// Every child is a Hash reference (modified Hash nodes of this commit
+				// or existing Hash bodies). Store the canonical body; no Prefix
+				// version and no copy of any unchanged descendant is written.
+				if e = p.add(hashColumn, parent.digest[:], parent.rlp); e != nil {
+					return e
+				}
+				hashRoots[position(key.TrieID, key.Path)] = true
+				p.scratch -= parent.scratch
+				parents[last] = prefixParent{}
+				parents = parents[:last]
+				return nil
 			}
 			if forest != nil && forest.projectedEdges != nil {
 				forest.projectedEdges(key, edges)
@@ -532,7 +563,14 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 				return e
 			}
 			p.stats.PrefixEncodes++
-			if e = p.replacePrefix(parent.encoded, raw); e != nil {
+			if parent.candidate {
+				// A candidate has no staged placeholder: it keeps its mixed
+				// Prefix/Hash child references as an ordinary Prefix record.
+				e = p.add(prefixColumn, parent.encoded, raw)
+			} else {
+				e = p.replacePrefix(parent.encoded, raw)
+			}
+			if e != nil {
 				return e
 			}
 			p.scratch -= parent.scratch
@@ -558,21 +596,12 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 				wroteRoot = true
 			}
 			changedDigests[change.Hash] = true
-			if len(hashRoots) != 0 {
-				for depth := len(change.Path); depth >= 0; depth-- {
-					if hashRoots[position(u.TrieID, change.Path[:depth])] {
-						return nil // ensureHash already staged the closed subtree
-					}
-				}
-			}
 			at := position(u.TrieID, change.Path)
-			if coldChildren[at] {
-				if e := s.ensureHashCursor(p, snap, hashCursor, change.Path, change.Hash, 0); e != nil {
-					return e
-				}
-				hashRoots[at] = true
-				return nil
-			}
+			// A modified child of a nonresident node may switch to Hash. The choice
+			// is made after its own children are known (see finalizeParent): only
+			// nodes whose children are all Hash-resolvable become Hash, so no
+			// unchanged descendant is ever copied to the Hash column.
+			candidate := coldChildren[at]
 			if initialHash {
 				if forest != nil && forest.initialNodeCheck != nil {
 					if e := forest.initialNodeCheck(NodeKey{u.TrieID, change.Path, height}, change.RLP); e != nil {
@@ -604,6 +633,11 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 					eligible |= 1 << i
 				}
 			}
+			if candidate && eligible == 0 {
+				// No non-inline child: the canonical body is self-contained.
+				hashRoots[at] = true
+				return p.add(hashColumn, change.Hash[:], change.RLP)
+			}
 			ctx := NodeKey{u.TrieID, change.Path, height}
 			mask := u.PrefixMask & eligible
 			if selector != nil {
@@ -622,6 +656,66 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 			if e != nil {
 				return e
 			}
+			// reserveScratch charges a decoded parent that stays typed until its
+			// subtree ends. MaxBatchBytes retains its persisted-byte meaning;
+			// decoded parents have a separate bounded O(depth) scratch allowance.
+			reserveScratch := func(extra int) (uint64, error) {
+				cost := 2*uint64(unsafe.Sizeof(prefixParent{})) + uint64(len(record.Fragment)+len(record.Value)+len(key)+len(ctx.Path)+extra)
+				for _, ref := range record.Children {
+					cost += uint64(len(ref.Inline))
+					if ref.Kind == Prefix {
+						cost += 64
+					} // slice backing capacity
+				}
+				scratchLimit := 2*p.limit + uint64(MaxDepth+1)*(2*uint64(unsafe.Sizeof(prefixParent{}))+16*64+256)
+				if p.scratch+cost > scratchLimit || len(parents) >= MaxDepth+1 {
+					return 0, ErrLimit
+				}
+				p.scratch += cost
+				if p.scratch > p.stats.ProjectionScratchPeakBytes {
+					p.stats.ProjectionScratchPeakBytes = p.scratch
+				}
+				return cost, nil
+			}
+			newParent := func(scratch uint64) prefixParent {
+				parent := prefixParent{key: ctx, encoded: key, record: record, scratch: scratch}
+				for i, ref := range record.Children {
+					if ref.Kind == Prefix {
+						parent.hashes = append(parent.hashes, desc.Children[i].Hash)
+					}
+				}
+				return parent
+			}
+			// markColdChildren makes every Prefix child of this nonresident node a
+			// Hash candidate if it is modified in this commit.
+			markColdChildren := func() error {
+				for i, ref := range record.Children {
+					if ref.Kind != Prefix {
+						continue
+					}
+					loc, e := locateChild(ctx, record, i)
+					if e != nil {
+						return e
+					}
+					coldChildren[position(u.TrieID, loc.Target.Path)] = true
+				}
+				return nil
+			}
+			if candidate && mask != 0 && mask == eligible {
+				// Nothing is staged yet: the node is Hash if all children can be
+				// Hash references, otherwise one Prefix record with mixed references.
+				// Its modified children are candidates as well; unchanged children
+				// keep their existing Prefix or Hash source.
+				cost, e := reserveScratch(len(change.RLP))
+				if e != nil {
+					return e
+				}
+				parent := newParent(cost)
+				parent.candidate, parent.digest = true, change.Hash
+				parent.rlp = append([]byte(nil), change.RLP...)
+				parents = append(parents, parent)
+				return markColdChildren()
+			}
 			var raw []byte
 			var scratch uint64
 			if mask == 0 {
@@ -633,24 +727,10 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 			} else {
 				// Keep only parents requiring edge resolution typed until final
 				// encoding. Children can already refer to this staged digest.
-				cost := 2*uint64(unsafe.Sizeof(prefixParent{})) + uint64(len(record.Fragment)+len(record.Value)+len(key)+len(ctx.Path))
-				for _, ref := range record.Children {
-					cost += uint64(len(ref.Inline))
-					if ref.Kind == Prefix {
-						cost += 64
-					} // slice backing capacity
+				scratch, e = reserveScratch(0)
+				if e != nil {
+					return e
 				}
-				// MaxBatchBytes retains its persisted-byte meaning. Decoded
-				// parents have a separate bounded O(depth) scratch allowance.
-				scratchLimit := 2*p.limit + uint64(MaxDepth+1)*(2*uint64(unsafe.Sizeof(prefixParent{}))+16*64+256)
-				if p.scratch+cost > scratchLimit || len(parents) >= MaxDepth+1 {
-					return ErrLimit
-				}
-				p.scratch += cost
-				if p.scratch > p.stats.ProjectionScratchPeakBytes {
-					p.stats.ProjectionScratchPeakBytes = p.scratch
-				}
-				scratch = cost
 				raw = make([]byte, recordHeaderBytes)
 				raw[0] = byte(record.Kind)
 				copy(raw[1:], record.Hash[:])
@@ -659,24 +739,11 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 				return e
 			}
 			if mask != 0 {
-				parent := prefixParent{key: ctx, encoded: key, record: record, scratch: scratch}
-				for i, ref := range record.Children {
-					if ref.Kind == Prefix {
-						parent.hashes = append(parent.hashes, desc.Children[i].Hash)
-					}
-				}
-				parents = append(parents, parent)
+				parents = append(parents, newParent(scratch))
 				if s.head.Initialized && forest != nil && forest.cacheBoundary != nil &&
 					forest.cacheBoundary.find(at) < 0 && !forest.retainedPrefix[at] && (forest.baseNodes == nil || forest.baseNodes.find(at) < 0) {
-					for i, ref := range record.Children {
-						if ref.Kind != Prefix {
-							continue
-						}
-						loc, e := locateChild(ctx, record, i)
-						if e != nil {
-							return e
-						}
-						coldChildren[position(u.TrieID, loc.Target.Path)] = true
+					if e = markColdChildren(); e != nil {
+						return e
 					}
 				}
 			}
@@ -808,6 +875,11 @@ func readPrefix(snap diskSnapshot, key NodeKey) (Record, error) {
 	}
 	return r, e
 }
+// ensureHash stages the canonical body of expected and, recursively, every
+// descendant that has no Hash body yet, so the whole subtree is traversable
+// through the Hash column alone. It is only for explicit Hash references that a
+// layout selector demands (and the initial Hash import); it copies unchanged
+// descendants and is therefore not used for cold-boundary placement.
 func (s *Store) ensureHash(p *writePlan, snap diskSnapshot, tree *mpt.Trie, path []byte, expected mpt.Hash, depth int) error {
 	return s.ensureHashCursor(p, snap, tree.CanonicalCursor(), path, expected, depth)
 }
