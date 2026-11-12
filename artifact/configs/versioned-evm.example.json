@@ -1,0 +1,17 @@
+{
+  "Schema": "versioned-evm-run/v1",
+  "Codec": "ethereum-mpt",
+  "WorkloadFile": "",
+  "Synthetic": {
+    "BackgroundAccounts": 1000,
+    "Blocks": 20,
+    "TransactionsPerBlock": 20,
+    "Contracts": 4,
+    "Seed": 1
+  },
+  "CacheBytes": 0,
+  "BlockCacheBytes": 8388608,
+  "WriteBufferBytes": 4194304,
+  "OpenFiles": 128,
+  "MaxBatchBytes": 8388608
+}

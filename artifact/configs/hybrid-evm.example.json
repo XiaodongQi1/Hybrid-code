@@ -1,0 +1,24 @@
+{
+  "Schema": "versioned-evm-run/v1",
+  "Backend": "hybrid-rocksdb",
+  "Codec": "ethereum-mpt",
+  "Synthetic": {
+    "BackgroundAccounts": 1000,
+    "Blocks": 20,
+    "TransactionsPerBlock": 20,
+    "Contracts": 4,
+    "Seed": 1
+  },
+  "HybridCache": {
+    "Slots": 4,
+    "PerTrie": {
+      "NodeBytes": 65536,
+      "HashBytes": 16384,
+      "CandidateBytes": 262144,
+      "PlanBytes": 2097152,
+      "MaxBlockCharge": 33554432,
+      "MaxOperations": 1024
+    }
+  },
+  "MaxBatchBytes": 8388608
+}

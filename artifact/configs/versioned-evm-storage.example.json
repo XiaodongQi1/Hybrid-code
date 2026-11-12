@@ -1,0 +1,17 @@
+{
+  "Schema": "versioned-evm-storage/v1",
+  "Workload": {
+    "BackgroundAccounts": 100000,
+    "Blocks": 1000,
+    "TransactionsPerBlock": 100,
+    "Contracts": 4,
+    "Seed": 1
+  },
+  "Storage": {
+    "CacheBytes": 0,
+    "BlockCacheBytes": 67108864,
+    "WriteBufferBytes": 16777216,
+    "OpenFiles": 128
+  },
+  "MaxBatchBytes": 134217728
+}

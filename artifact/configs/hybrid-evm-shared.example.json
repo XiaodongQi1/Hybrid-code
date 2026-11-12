@@ -1,0 +1,37 @@
+{
+  "Schema": "versioned-evm-run/v1",
+  "Backend": "hybrid-rocksdb",
+  "Codec": "ethereum-mpt",
+  "Synthetic": {
+    "BackgroundAccounts": 1000,
+    "Blocks": 20,
+    "TransactionsPerBlock": 40,
+    "Contracts": 16,
+    "StorageSlots": 32,
+    "Pattern": "migrate",
+    "Seed": 1
+  },
+  "HybridCache": {
+    "Mode": "reserved-shared",
+    "ReservedShared": {
+      "NodeBudget": {"TotalBytes": 262144, "AccountReserveBytes": 65536, "StorageReserveBytes": 65536},
+      "HashBudget": {"TotalBytes": 65536, "AccountReserveBytes": 16384, "StorageReserveBytes": 16384},
+      "MaxResidentTries": 256,
+      "MetadataBytes": 2097152,
+      "CandidateBytes": 1048576,
+      "PlanBytes": 16777216,
+      "TreesPerAttempt": 4,
+      "PathsPerTrie": 2,
+      "WorkUnits": 262144,
+      "HalfLife": 64,
+      "SketchPeriod": 256,
+      "SketchWidth": 16384,
+      "EventCapacity": 4096,
+      "Seed": 1,
+      "Epsilon": 0.1,
+      "NodeWeight": 1,
+      "HashWeight": 1
+    }
+  },
+  "MaxBatchBytes": 8388608
+}

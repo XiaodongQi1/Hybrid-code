@@ -1,0 +1,23 @@
+{
+  "Schema": "versioned-trie-reference/v1",
+  "Generator": "go-ethereum v1.16.9 StackTrie + upstream RLP (independent offline generator)",
+  "FixtureSHA256": "c3cf4bc4aec1f32cf16a5b9da370c00d45c9168db147af0157765e28d8cd6e77",
+  "Roots": {
+    "ethereum-mpt": [
+      "0x85a98e52ef071762356dce15f68d87998ca1e4a1aa7dee931c4cc09e67870c60",
+      "0x7f3326735f0f3687f3b1596fa417e361226f9baaa44cc9b9dfed615ffb4deca8",
+      "0xcb8afbc3513f4406f75eba409b206e1156efe4e78a5d5ab748d76abe3337593c",
+      "0x04645f2f9557be48219202ac91a83ac260c69a5ca7813269454b8c973c7c3244",
+      "0x3c005115530a8b17ada0bf532261e657eab2acae9e45b3913e770eb1dc17b9f7",
+      "0x9da5bbaec87ff34c84362c454a29a55b40dbbcccf676a2d8eda33ad0fc56f7c9"
+    ],
+    "legacy-raw105": [
+      "0x46e86312c37be21306f630b8e745c28b0adede9ab400cdcd52b5b96bded80bc0",
+      "0xcf280dc73277e434e857830d9cfccdb3f70ca0315644e04b3cc30020bae2ee5b",
+      "0xa4da3d649990e4e217f0efce40969ce3620a404cc433dc0b61bb593039a10ca5",
+      "0x2eadb330b51c963dc5809a29d23a79561fd9a06fad00b45554c9a5a2146a5510",
+      "0x671f9f7fe9de2bff10959ffed8b16f0fb0775cc386f97ec156bf753d737192f4",
+      "0x7be0598bf163ce088088cfc062a98c8bbf9bebf5a372c95b3d1a06a39f8e2dc1"
+    ]
+  }
+}

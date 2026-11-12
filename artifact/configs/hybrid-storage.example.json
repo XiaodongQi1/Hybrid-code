@@ -1,0 +1,10 @@
+{
+  "Keys": 1000,
+  "Blocks": 1000,
+  "WritesPerBlock": 10,
+  "ValueBytes": 64,
+  "Queries": 30,
+  "Seed": 1,
+  "Workloads": ["uniform", "hot"],
+  "OutputDir": "benchmarks/results/hybrid-storage-1k-1000b"
+}

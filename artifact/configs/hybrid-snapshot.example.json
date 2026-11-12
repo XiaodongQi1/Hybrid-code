@@ -1,0 +1,46 @@
+{
+  "Schema": "hybrid-snapshot/v1",
+  "SourceFile": "../../.local/accounts.jsonl",
+  "Header": {
+    "Height": 0,
+    "ID": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "Context": {
+      "Time": 0,
+      "GasLimit": 30000000,
+      "BaseFee": 0,
+      "BlobBaseFee": 0
+    }
+  },
+  "ExpectedRoot": "",
+  "MaxBatchBytes": 8388608,
+  "HybridCache": {
+    "Mode": "prefix-boundary",
+    "Boundary": {
+      "MaxNodeBytes": 532,
+      "NodeBudget": {
+        "TotalBytes": 262144,
+        "AccountReserveBytes": 65536,
+        "StorageReserveBytes": 65536
+      },
+      "PolicyIntervalBlocks": 16,
+      "PolicyOriginHeight": 0,
+      "HalfLife": 64,
+      "MaxResidentTries": 256,
+      "WorkUnits": 262144,
+      "CandidateBytes": 2097152,
+      "MetadataBytes": 4194304,
+      "PlanBytes": 2097152,
+      "HeatBucketCount": 4,
+      "HeatBucketBlocks": 64,
+      "HeatSketchRows": 4,
+      "HeatSketchWidth": 16384
+    }
+  },
+  "Snapshot": {
+    "ChunkEntries": 256,
+    "CheckpointAccounts": 256,
+    "BatchBytes": 1048576,
+    "ScratchPath": "",
+    "KeepScratch": false
+  }
+}

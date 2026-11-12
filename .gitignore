@@ -1,0 +1,51 @@
+# Local tooling and caches
+/.idea/
+.DS_Store
+__pycache__/
+*.pyc
+coverage.out
+*.test
+*.prof
+*.pprof
+/skills/
+
+# Generated workloads, downloaded data, snapshots, and experiment outputs
+/benchmarks/fixtures/
+/benchmarks/results/
+/hybridtrie/benchmarks/results/
+/benchmarks/seeds/
+/output/
+/outputs/
+/tmp/
+/data/
+/datasets/
+/results/
+
+# Local executables, deployments, and private host inventories
+/artifact/bin/
+/artifact/runs/
+/artifact/configs/*.json
+!/artifact/configs/*.example.json
+
+# Keep project documentation in the root README only
+/docs/
+*.md
+*.rst
+*.adoc
+!/README.md
+!**/LICENSE.md
+!**/LICENCE.md
+!**/COPYING.md
+!**/NOTICE.md
+!**/AUTHORS.md
+!**/COPYRIGHT.md
+
+# Private configuration retained outside disposable experiment data
+/.local/
+.env
+.env.*
+*.env
+*.pem
+*.key
+id_rsa
+id_ed25519

@@ -1,0 +1,59 @@
+{
+  "Schema": "versioned-evm-run/v1",
+  "Backend": "hybrid",
+  "Codec": "ethereum-mpt",
+  "Synthetic": {
+    "BackgroundAccounts": 1000,
+    "Blocks": 20,
+    "TransactionsPerBlock": 40,
+    "Contracts": 16,
+    "StorageSlots": 32,
+    "Pattern": "migrate",
+    "Seed": 1
+  },
+  "HybridCache": {
+    "Mode": "prefix-boundary",
+    "Boundary": {
+      "MaxNodeBytes": 532,
+      "NodeBudget": {
+        "TotalBytes": 262144,
+        "AccountReserveBytes": 65536,
+        "StorageReserveBytes": 65536
+      },
+      "PolicyIntervalBlocks": 16,
+      "PolicyOriginHeight": 0,
+      "HalfLife": 64,
+      "MaxResidentTries": 256,
+      "WorkUnits": 262144,
+      "CandidateBytes": 2097152,
+      "MetadataBytes": 4194304,
+      "PlanBytes": 2097152,
+      "HeatBucketCount": 4,
+      "HeatBucketBlocks": 64,
+      "HeatSketchRows": 4,
+      "HeatSketchWidth": 16384,
+      "ExecutionReads": {
+        "Enabled": false,
+        "Workers": 1,
+        "Queue": 256,
+        "Entries": 8192,
+        "BodyBytes": 8388608
+      }
+    }
+  },
+  "MaxBatchBytes": 8388608,
+  "HybridInitialization": "hash-cold",
+  "HybridStorage": {
+    "Engine": "leveldb",
+    "Compression": "none",
+    "BlockCacheBytes": 8388608,
+    "WriteBufferBytes": 8388608,
+    "OpenFiles": 128
+  },
+  "ParallelProof": {
+    "Enabled": false,
+    "Workers": 2,
+    "MinBackgroundReads": 4,
+    "MaxContextBytes": 262144
+  }
+}

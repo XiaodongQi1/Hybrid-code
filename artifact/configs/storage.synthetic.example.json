@@ -1,0 +1,12 @@
+{
+  "Schema": "versioned-trie-storage-bench/v1",
+  "Seed": 20261101,
+  "Keys": 10000,
+  "Blocks": 100,
+  "UpdatesPerBlock": 100,
+  "QueriesPerHeight": 4,
+  "ValueBytes": [32, 105],
+  "Patterns": ["uniform", "hot"],
+  "HotFraction": 0.01,
+  "HotProbability": 0.8
+}

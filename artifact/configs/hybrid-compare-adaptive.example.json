@@ -1,0 +1,41 @@
+{
+  "Methods": [
+    "archive",
+    "path",
+    "hybrid"
+  ],
+  "Suites": [
+    "storage",
+    "execution",
+    "historical-query"
+  ],
+  "PrefixSnapshot": true,
+  "Engine": "leveldb",
+  "Synthetic": {
+    "BackgroundAccounts": 256,
+    "Blocks": 1064,
+    "TransactionsPerBlock": 16,
+    "Contracts": 8,
+    "Seed": 71
+  },
+  "Resources": {
+    "ApplicationCacheBytes": 8388608,
+    "BlockCacheBytes": 2097152,
+    "GlobalWriteBufferBytes": 2097152,
+    "MaxBatchBytes": 8388608,
+    "MaxStagingBytes": 8388608,
+    "Compression": "none"
+  },
+  "Trials": 3,
+  "WarmupBlocks": 1000,
+  "Queries": 30,
+  "QuerySeed": 71,
+  "HybridBoundary": {
+    "ResidentLayout": "typed",
+    "VictimEligibility": "frontier",
+    "ReservationPolicy": "borrow",
+    "PolicyIntervalBlocks": 16,
+    "AdmissionReadNodes": 64,
+    "AdmissionReadBytes": 262144
+  }
+}
