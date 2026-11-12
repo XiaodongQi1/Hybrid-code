@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-state/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/codec"
 )
 
 func TestSharedObjectsReadOnlyReopenAndCorruption(t *testing.T) {

@@ -17,7 +17,7 @@
 package vm
 
 import (
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/params"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/params"
 )
 
 func minSwapStack(n int) int {

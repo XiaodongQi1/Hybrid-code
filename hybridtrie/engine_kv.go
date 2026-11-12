@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 var familyNames = []string{"default", "prefix", "hash"}

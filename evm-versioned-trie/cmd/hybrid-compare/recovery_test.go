@@ -10,9 +10,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/comparison"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/comparison"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 // Run the actual controller in a separate process. os.Exit bypasses all Go

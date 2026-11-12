@@ -2,7 +2,7 @@
 // The leaf formats are shared by all comparison backends in evm-state/codec.
 package codec
 
-import shared "github.com/XiaodongQi1/HybridTrie/evm-state/codec"
+import shared "github.com/XiaodongQi1/Hybrid-code/evm-state/codec"
 
 type Mode = shared.Mode
 

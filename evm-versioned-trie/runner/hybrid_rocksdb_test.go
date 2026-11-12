@@ -4,9 +4,9 @@ package runner
 
 import (
 	"path/filepath"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/codec"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
 	"testing"
 )
 

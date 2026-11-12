@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 	"testing"
 )
 

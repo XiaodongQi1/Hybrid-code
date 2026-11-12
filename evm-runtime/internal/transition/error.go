@@ -19,7 +19,7 @@ package transition
 import (
 	"errors"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/core/types"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/core/types"
 )
 
 // List of evm-call-message pre-checking errors. All state transition messages will

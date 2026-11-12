@@ -1,4 +1,4 @@
-module github.com/XiaodongQi1/HybridTrie
+module github.com/XiaodongQi1/Hybrid-code
 
 go 1.20
 

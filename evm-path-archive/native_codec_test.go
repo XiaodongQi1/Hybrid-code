@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-state/codec"
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/state"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/codec"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/state"
 )
 
 func TestNativeCodecFlatValues(t *testing.T) {

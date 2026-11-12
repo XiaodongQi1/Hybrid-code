@@ -3,7 +3,7 @@ package triecodec
 import (
 	"errors"
 	"golang.org/x/crypto/sha3"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 type Config struct {

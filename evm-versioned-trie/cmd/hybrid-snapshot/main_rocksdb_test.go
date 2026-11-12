@@ -8,9 +8,9 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/block"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/backend"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/backend"
 	"testing"
 )
 

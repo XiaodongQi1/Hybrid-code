@@ -2,7 +2,7 @@ package hybridtrie
 
 import (
 	"bytes"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 // These hints belong to one trie at one pinned pre-commit root. A parent can

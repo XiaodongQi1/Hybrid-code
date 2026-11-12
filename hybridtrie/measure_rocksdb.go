@@ -2,7 +2,7 @@
 
 package hybridtrie
 
-import "github.com/XiaodongQi1/HybridTrie/mpt"
+import "github.com/XiaodongQi1/Hybrid-code/mpt"
 
 // Diagnostic counters count live user Key/Value bytes, including all local
 // metadata. They do not equate logical bytes or compacted SSTs with total disk IO.

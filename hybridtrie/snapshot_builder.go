@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 var builderManifestKey = []byte("S/manifest")

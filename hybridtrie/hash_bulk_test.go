@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 func TestHashBulkLevelDBPublicationRecovery(t *testing.T) { runHashBulkRecovery(t, kvstore.LevelDB) }

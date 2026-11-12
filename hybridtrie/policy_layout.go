@@ -1,6 +1,6 @@
 package hybridtrie
 
-import "github.com/XiaodongQi1/HybridTrie/mpt"
+import "github.com/XiaodongQi1/Hybrid-code/mpt"
 
 func (b *cacheBuffer) nodePosition(path []byte) (int, bool) {
 	for i := 0; i < b.n; i++ {

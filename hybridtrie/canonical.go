@@ -1,6 +1,6 @@
 package hybridtrie
 
-import "github.com/XiaodongQi1/HybridTrie/mpt"
+import "github.com/XiaodongQi1/Hybrid-code/mpt"
 
 // FromCanonical projects one independent node. prefixMask may select only
 // native hashed children (bit zero for an extension). Inline children always

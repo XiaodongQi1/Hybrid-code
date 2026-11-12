@@ -20,9 +20,9 @@ import (
 	"math"
 
 	"github.com/holiman/uint256"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/params"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/params"
 )
 
 func opAdd(pc *uint64, evm *EVM, scope *ScopeContext) ([]byte, error) {

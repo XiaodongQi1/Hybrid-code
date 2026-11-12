@@ -19,7 +19,7 @@ package vm
 import (
 	"fmt"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/params"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/params"
 )
 
 type (

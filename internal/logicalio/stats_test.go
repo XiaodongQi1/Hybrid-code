@@ -2,7 +2,7 @@ package logicalio
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 	"testing"
 )
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common/bitutil"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common/bitutil"
 )
 
 // G2 is the affine representation of a G2 group element.

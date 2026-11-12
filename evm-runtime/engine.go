@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/core/types"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/core/vm"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/params"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/internal/transition"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/core/types"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/core/vm"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/params"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/internal/transition"
 )
 
 // State is the seam for a future Statera backend. EVM-visible values must be

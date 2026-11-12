@@ -18,7 +18,7 @@ package vm
 
 import (
 	"github.com/holiman/uint256"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
 )
 
 // Contract represents an ethereum contract in the state database. It contains

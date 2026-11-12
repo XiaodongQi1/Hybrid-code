@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 func TestHybridReadSwitchesLevelDB(t *testing.T) { testHybridReadSwitches(t, kvstore.LevelDB) }

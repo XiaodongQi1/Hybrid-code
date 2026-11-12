@@ -1,4 +1,4 @@
-module github.com/XiaodongQi1/HybridTrie/evm-runtime
+module github.com/XiaodongQi1/Hybrid-code/evm-runtime
 
 go 1.24.0
 

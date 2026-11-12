@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/codec"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
 	"testing"
 )
 

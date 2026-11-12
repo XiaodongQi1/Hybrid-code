@@ -12,11 +12,11 @@ import (
 	"path/filepath"
 	"syscall"
 
-	rt "github.com/XiaodongQi1/HybridTrie/evm-runtime"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/artifact"
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	rt "github.com/XiaodongQi1/Hybrid-code/evm-runtime"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/artifact"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 // sealed JSON keeps the public result format intact. The small sidecar is the

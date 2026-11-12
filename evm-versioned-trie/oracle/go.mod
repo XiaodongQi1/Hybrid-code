@@ -1,4 +1,4 @@
-module github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/oracle
+module github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/oracle
 
 go 1.24.0
 

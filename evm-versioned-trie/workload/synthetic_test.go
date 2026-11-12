@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"testing"
 
-	rt "github.com/XiaodongQi1/HybridTrie/evm-runtime"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
+	rt "github.com/XiaodongQi1/Hybrid-code/evm-runtime"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
 )
 
 func TestSyntheticPreservesExistingFrozenWorkload(t *testing.T) {

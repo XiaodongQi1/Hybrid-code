@@ -1,6 +1,6 @@
 package patharchive
 
-import "github.com/XiaodongQi1/HybridTrie/kvstore"
+import "github.com/XiaodongQi1/Hybrid-code/kvstore"
 
 // These private contracts keep history algorithms independent of an LSM API.
 // A nil range selects the whole default column. Iterators retain the legacy

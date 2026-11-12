@@ -20,7 +20,7 @@ import (
 	"math/bits"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
 )
 
 func TestJumpDestAnalysis(t *testing.T) {

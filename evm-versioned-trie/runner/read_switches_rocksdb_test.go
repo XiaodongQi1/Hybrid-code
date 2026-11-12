@@ -5,7 +5,7 @@ package runner
 import (
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 func TestHybridReadSwitchesRocksDB(t *testing.T) { testHybridReadSwitches(t, kvstore.RocksDB) }

@@ -16,7 +16,7 @@
 
 package types
 
-import "github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
+import "github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
 
 // EmptyCodeHash is the Keccak256 hash of empty EVM bytecode.
 var EmptyCodeHash = crypto.Keccak256Hash(nil)

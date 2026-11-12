@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 func (s *Store) EngineStats() (kvstore.Statistics, error) {

@@ -7,12 +7,12 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
 
 	"github.com/holiman/uint256"
-	runtime "github.com/XiaodongQi1/HybridTrie/evm-runtime"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/core/types"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
+	runtime "github.com/XiaodongQi1/Hybrid-code/evm-runtime"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/core/types"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
 )
 
 func main() {

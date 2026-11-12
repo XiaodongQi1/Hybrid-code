@@ -6,8 +6,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
-	"github.com/XiaodongQi1/HybridTrie/internal/kvcache"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/internal/kvcache"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 // The compatibility adapter alone knows the old LevelDB batch/range/errors.

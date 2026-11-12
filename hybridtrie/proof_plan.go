@@ -10,7 +10,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 // ParallelProofConfig is a runtime query policy, not a database format option.

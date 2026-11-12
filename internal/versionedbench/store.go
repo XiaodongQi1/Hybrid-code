@@ -13,8 +13,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
-	vt "github.com/XiaodongQi1/HybridTrie/versionedtrie"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
+	vt "github.com/XiaodongQi1/Hybrid-code/versionedtrie"
 	"strings"
 )
 

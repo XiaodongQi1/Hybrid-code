@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"github.com/XiaodongQi1/HybridTrie/internal/versionedbench"
+	"github.com/XiaodongQi1/Hybrid-code/internal/versionedbench"
 )
 
 func main() {

@@ -3,7 +3,7 @@
 package patharchive
 
 import (
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 	"testing"
 )
 

@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-state/block"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 // This opt-in scale experiment changes no production path. Each completed

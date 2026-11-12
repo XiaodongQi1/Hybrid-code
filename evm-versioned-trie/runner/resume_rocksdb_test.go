@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/backend"
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/backend"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
 )
 
 func hybridResumeConfig(mode string) Config {

@@ -3,7 +3,7 @@ package hybridtrie
 import (
 	"errors"
 	"math/bits"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 	"sync"
 	"unsafe"
 )

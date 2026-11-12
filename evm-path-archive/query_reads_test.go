@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	dq "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/state"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	dq "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/state"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 type queryCountingEngine struct {

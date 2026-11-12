@@ -3,8 +3,8 @@ package patharchive
 import (
 	"context"
 	"path/filepath"
-	dq "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	dq "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 	"testing"
 )
 

@@ -23,7 +23,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/rlp/internal/rlpstruct"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/rlp/internal/rlpstruct"
 )
 
 // typeinfo is an entry in the type cache.

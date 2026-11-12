@@ -3,12 +3,12 @@ package comparison
 import (
 	"fmt"
 
-	pa "github.com/XiaodongQi1/HybridTrie/evm-path-archive"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/codec"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/forest"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/backend"
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	pa "github.com/XiaodongQi1/Hybrid-code/evm-path-archive"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/forest"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/backend"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 type ResourceBudget struct {

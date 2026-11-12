@@ -18,7 +18,7 @@ package vm
 
 import (
 	"errors"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/params"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/params"
 )
 
 // LookupInstructionSet returns the instruction set for the fork configured by

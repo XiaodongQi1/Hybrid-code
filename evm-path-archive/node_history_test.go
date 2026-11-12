@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"math/rand"
 	"path/filepath"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/rlp"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/rlp"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 	"testing"
 )
 

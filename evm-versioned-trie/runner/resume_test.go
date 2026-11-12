@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-state/block"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/codec"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
 )
 
 var interrupted = errors.New("simulated interruption")

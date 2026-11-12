@@ -8,9 +8,9 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"os"
 	"path/filepath"
-	vb "github.com/XiaodongQi1/HybridTrie/internal/versionedbench"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
-	vt "github.com/XiaodongQi1/HybridTrie/versionedtrie"
+	vb "github.com/XiaodongQi1/Hybrid-code/internal/versionedbench"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
+	vt "github.com/XiaodongQi1/Hybrid-code/versionedtrie"
 )
 
 func stateClass(method string, k, v []byte) (string, error) {

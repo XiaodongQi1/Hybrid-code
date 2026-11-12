@@ -5,7 +5,7 @@ package logicalio
 import (
 	"encoding/hex"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 type Count struct{ Puts, Deletes, KeyBytes, ValueBytes, DeleteKeyBytes uint64 }

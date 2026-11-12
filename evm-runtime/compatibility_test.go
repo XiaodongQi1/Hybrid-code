@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/core/types"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/rlp"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/core/types"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/rlp"
 )
 
 // Fixed vectors were produced with the unmodified upstream version. Tests use

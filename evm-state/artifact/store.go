@@ -14,8 +14,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/codec"
 )
 
 const MaxBlobBytes = 64 << 20

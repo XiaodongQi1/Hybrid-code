@@ -7,15 +7,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	pa "github.com/XiaodongQi1/HybridTrie/evm-path-archive"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/artifact"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/codec"
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/backend"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	pa "github.com/XiaodongQi1/Hybrid-code/evm-path-archive"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/artifact"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/codec"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/backend"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 func TestDefaultResourcePlanMatchesAllocatedMemory(t *testing.T) {

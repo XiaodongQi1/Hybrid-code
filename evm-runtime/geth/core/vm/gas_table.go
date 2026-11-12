@@ -20,9 +20,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common/math"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/params"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common/math"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/params"
 )
 
 // memoryGasCost calculates the quadratic gas for memory expansion. It does so

@@ -12,10 +12,10 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/block"
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	vb "github.com/XiaodongQi1/HybridTrie/internal/versionedbench"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	vb "github.com/XiaodongQi1/Hybrid-code/internal/versionedbench"
 	"time"
 )
 

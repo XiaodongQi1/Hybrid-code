@@ -9,13 +9,13 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/codec"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	ht "github.com/XiaodongQi1/HybridTrie/hybridtrie"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	ht "github.com/XiaodongQi1/Hybrid-code/hybridtrie"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 func TestParallelProofEVMLevelDB(t *testing.T) { runParallelProofEVM(t, kvstore.LevelDB) }

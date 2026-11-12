@@ -8,7 +8,7 @@ physical node placement; it does not change the authenticated state.
 
 This independent repository contains the storage engine, EVM adapter, and local
 comparison framework for HybridTrie, Hash Archive, and Path Archive. All local
-Go modules are included under `github.com/XiaodongQi1/HybridTrie`. No checkout of
+Go modules are included under `github.com/XiaodongQi1/Hybrid-code`. No checkout of
 the original Statera project is required.
 
 The supplied workloads are synthetic and execute through the included EVM.
@@ -33,6 +33,11 @@ Use **Go 1.24 or newer** for the complete EVM framework. Keep the directory
 layout intact: the nested modules use relative `replace` directives. Run the
 following commands from the repository root. Go may fetch pinned dependencies
 on the first build; no blockchain dataset is required.
+
+```sh
+git clone https://github.com/XiaodongQi1/Hybrid-code.git
+cd Hybrid-code
+```
 
 ### LevelDB: no native library required
 

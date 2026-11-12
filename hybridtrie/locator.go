@@ -1,6 +1,6 @@
 package hybridtrie
 
-import "github.com/XiaodongQi1/HybridTrie/mpt"
+import "github.com/XiaodongQi1/Hybrid-code/mpt"
 
 // ChildLocator preserves the physical source declared by a parent. Prefix
 // locators have no known hash; Hash locators carry a digest, and Embed locators

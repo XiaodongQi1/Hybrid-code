@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-state/artifact"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/codec"
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/artifact"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/codec"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 func TestSharedLevelDBStateOnlyArtifacts(t *testing.T) { runStateOnlyArtifacts(t, kvstore.LevelDB) }

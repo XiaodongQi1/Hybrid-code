@@ -1,6 +1,6 @@
 package hybridtrie
 
-import "github.com/XiaodongQi1/HybridTrie/mpt"
+import "github.com/XiaodongQi1/Hybrid-code/mpt"
 
 // A staged body belongs to this block's pinned base view. The same logical
 // digest may occur in different physical versions, so an explicit locator

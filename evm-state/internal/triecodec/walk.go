@@ -2,7 +2,7 @@ package triecodec
 
 import (
 	"context"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 // CheckNode checks canonical encoding and immediate hashed children (including

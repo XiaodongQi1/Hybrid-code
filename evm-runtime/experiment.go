@@ -6,10 +6,10 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/core/types"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/internal/transition"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/core/types"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/internal/transition"
 )
 
 // ExperimentTransaction is trusted workload input, not an Ethereum transaction.

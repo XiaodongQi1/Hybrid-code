@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/block"
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	"github.com/XiaodongQi1/HybridTrie/internal/kvcache"
-	vb "github.com/XiaodongQi1/HybridTrie/internal/versionedbench"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
-	vt "github.com/XiaodongQi1/HybridTrie/versionedtrie"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	"github.com/XiaodongQi1/Hybrid-code/internal/kvcache"
+	vb "github.com/XiaodongQi1/Hybrid-code/internal/versionedbench"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
+	vt "github.com/XiaodongQi1/Hybrid-code/versionedtrie"
 )
 
 var Methods = []string{"HashArchive", "PathV7", "HashVersioned"}

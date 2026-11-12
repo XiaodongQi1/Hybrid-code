@@ -1,6 +1,6 @@
 package patharchive
 
-import "github.com/XiaodongQi1/HybridTrie/kvstore"
+import "github.com/XiaodongQi1/Hybrid-code/kvstore"
 
 type sharedEngine struct{ db *kvstore.DB }
 type sharedSnapshot struct{ view *kvstore.Snapshot }

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
-	rt "github.com/XiaodongQi1/HybridTrie/evm-runtime"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/block"
+	rt "github.com/XiaodongQi1/Hybrid-code/evm-runtime"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
 )
 
 const DefaultWarmupBlocks = 1000

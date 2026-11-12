@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
 )
 
 // precompiledTest defines the input/output pairs for precompiled contract tests.

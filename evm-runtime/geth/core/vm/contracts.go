@@ -29,15 +29,15 @@ import (
 	patched_big "github.com/ethereum/go-bigmodexpfix/src/math/big"
 	"github.com/holiman/uint256"
 	"golang.org/x/crypto/ripemd160"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common/bitutil"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common/bitutil"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto/blake2b"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto/bn256"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/crypto/kzg4844"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto/blake2b"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto/bn256"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/crypto/kzg4844"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/params"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/params"
 )
 
 // PrecompiledContract is the basic interface for native Go contracts. The implementation

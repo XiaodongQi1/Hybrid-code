@@ -2,7 +2,7 @@ package versionedtrie
 
 import (
 	"fmt"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 const MaxProjectionNodes = 1 << 20

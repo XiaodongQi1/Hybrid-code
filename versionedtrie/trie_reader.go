@@ -3,7 +3,7 @@ package versionedtrie
 import (
 	"errors"
 	"fmt"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 var ErrPathRequired = errors.New("versionedtrie: trieID and nibble path required")

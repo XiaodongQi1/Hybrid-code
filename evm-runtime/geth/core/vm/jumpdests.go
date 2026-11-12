@@ -16,7 +16,7 @@
 
 package vm
 
-import "github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
+import "github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
 
 // JumpDestCache represents the cache of jumpdest analysis results.
 type JumpDestCache interface {

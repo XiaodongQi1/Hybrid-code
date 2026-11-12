@@ -2,7 +2,7 @@ package hybridtrie
 
 import (
 	"math/bits"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 func (b *boundaryBank) trieID(n boundaryNode) uint64 {

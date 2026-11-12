@@ -7,11 +7,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
-	"github.com/XiaodongQi1/HybridTrie/evm-state/block"
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/codec"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/codec"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
 )
 
 func TestLogicalTraceImportMatchesEVM(t *testing.T) {

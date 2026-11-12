@@ -1,13 +1,13 @@
-module github.com/XiaodongQi1/HybridTrie/evm-path-archive
+module github.com/XiaodongQi1/Hybrid-code/evm-path-archive
 
 go 1.24.0
 
 require (
 	github.com/holiman/uint256 v1.3.2
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-	github.com/XiaodongQi1/HybridTrie v0.0.0
-	github.com/XiaodongQi1/HybridTrie/evm-state v0.0.0
-	github.com/XiaodongQi1/HybridTrie/evm-runtime v0.0.0
+	github.com/XiaodongQi1/Hybrid-code v0.0.0
+	github.com/XiaodongQi1/Hybrid-code/evm-state v0.0.0
+	github.com/XiaodongQi1/Hybrid-code/evm-runtime v0.0.0
 )
 
 require (
@@ -22,8 +22,8 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 )
 
-replace github.com/XiaodongQi1/HybridTrie => ..
+replace github.com/XiaodongQi1/Hybrid-code => ..
 
-replace github.com/XiaodongQi1/HybridTrie/evm-runtime => ../evm-runtime
+replace github.com/XiaodongQi1/Hybrid-code/evm-runtime => ../evm-runtime
 
-replace github.com/XiaodongQi1/HybridTrie/evm-state => ../evm-state
+replace github.com/XiaodongQi1/Hybrid-code/evm-state => ../evm-state

@@ -3,7 +3,7 @@ package hybridtrie
 import (
 	"encoding/binary"
 	"math/bits"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 // ReferenceKind is physical addressing. Embed is mandatory for short child RLP.

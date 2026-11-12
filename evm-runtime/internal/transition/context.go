@@ -19,9 +19,9 @@ package transition
 import (
 	"github.com/holiman/uint256"
 	"math/big"
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/common"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/common"
 
-	"github.com/XiaodongQi1/HybridTrie/evm-runtime/geth/core/vm"
+	"github.com/XiaodongQi1/Hybrid-code/evm-runtime/geth/core/vm"
 )
 
 // NewEVMTxContext creates a new transaction context for a single transaction.

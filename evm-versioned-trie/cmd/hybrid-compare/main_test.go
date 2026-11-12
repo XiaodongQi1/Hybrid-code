@@ -8,10 +8,10 @@ import (
 	"slices"
 	"testing"
 
-	q "github.com/XiaodongQi1/HybridTrie/evm-state/query"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/comparison"
-	"github.com/XiaodongQi1/HybridTrie/evm-versioned-trie/workload"
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
+	q "github.com/XiaodongQi1/Hybrid-code/evm-state/query"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/comparison"
+	"github.com/XiaodongQi1/Hybrid-code/evm-versioned-trie/workload"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
 )
 
 func TestComparisonSuites(t *testing.T) {

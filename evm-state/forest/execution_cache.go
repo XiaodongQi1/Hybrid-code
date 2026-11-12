@@ -6,8 +6,8 @@ import (
 	"encoding/binary"
 	"unsafe"
 
-	"github.com/XiaodongQi1/HybridTrie/kvstore"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/kvstore"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 const baselineNodeLimit = 532 // largest Ethereum branch with sixteen hash children

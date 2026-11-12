@@ -2,7 +2,7 @@ package versionedtrie
 
 import (
 	"encoding/binary"
-	"github.com/XiaodongQi1/HybridTrie/mpt"
+	"github.com/XiaodongQi1/Hybrid-code/mpt"
 )
 
 const MaxRecordBytes = 1 << 20
