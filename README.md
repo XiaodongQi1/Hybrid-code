@@ -589,6 +589,35 @@ switch to streaming. `hash-cold` rejects `HybridSnapshot`. An empty execution
 cache does not imply a flushed OS or engine cache. The comparison's
 `PrefixSnapshot` selects its prepared-source target representation separately.
 
+### Initial representation and write savings
+
+The initial representation sets how much a Prefix record can save, because a
+Prefix record omits the digest of each Prefix child but must keep the 32-byte
+digest of every Hash child. Unchanged siblings keep their initial source (they
+are never copied to change it), so every new version of a modified ancestor
+re-stores the digests of its Hash siblings, as an archive node's RLP does.
+
+- **Prefix initialization**: siblings are Prefix, their digests are omitted, and
+  the new ancestor versions are much smaller than the archive nodes.
+- **Hash initialization** (`hash-cold`): siblings are Hash, so about 88% of the
+  bytes of a new ancestor Prefix record are Hash-child digests and the saving
+  is small.
+
+A synthetic probe (4,000 keys, one resident cache slot, 200 blocks of 3 updates,
+LevelDB) wrote the same 3,130 nodes as an archive-equivalent trie, with no node
+stored in both columns and no backfill:
+
+| Initialization | Bytes written | Versus archive-equivalent (769 KB) |
+| --- | --- | --- |
+| Prefix | 200 KB | about 74% less |
+| Hash | 668 KB | about 13% less |
+
+These figures come from a periodic synthetic key set and the HybridTrie layer
+alone, not real chain state or the EVM path, so treat them as an illustration of
+the mechanism, not a prediction. The saving on real state depends on how many
+unchanged siblings are already Prefix. Identical subtrees at different positions
+are stored once per position in the Prefix column but once in the Hash column.
+
 ### Standalone snapshot import
 
 The importer consumes address-sorted JSONL allocation rows with no duplicates.
