@@ -261,6 +261,9 @@ func TestColdBranchModificationKeepsMixedReferencesAndHistory(t *testing.T) {
 	check(err)
 	raw, err := snapshot.get(prefixColumn, key)
 	check(err)
+	// The stored value may be a delta; compare the complete record.
+	raw, err = normalizePrefix(snapshot, NodeKey{0, []byte{1}, 2}, raw, nil)
+	check(err)
 	record, err := DecodeRecord(raw)
 	check(err)
 	if record.Children[0].Kind != Prefix || record.Children[1].Kind != Prefix {
@@ -269,6 +272,8 @@ func TestColdBranchModificationKeepsMixedReferencesAndHistory(t *testing.T) {
 	key, err = EncodeNodeKey(NodeKey{0, []byte{1, 0}, 2})
 	check(err)
 	raw, err = snapshot.get(prefixColumn, key)
+	check(err)
+	raw, err = normalizePrefix(snapshot, NodeKey{0, []byte{1, 0}, 2}, raw, nil)
 	check(err)
 	record, err = DecodeRecord(raw)
 	check(err)

@@ -41,6 +41,16 @@ func (s *Store) MeasureStorage(ctx context.Context, stabilize bool) (kvstore.Mea
 			if e != nil {
 				return kvstore.Classification{}, e
 			}
+			if isDelta(v) {
+				// A delta has no standalone validation; its chain is checked on read.
+				if _, e = decodeDelta(v); e != nil {
+					return kvstore.Classification{}, e
+				}
+				if key.TrieID == 0 {
+					return state("account-prefix-delta")
+				}
+				return state("storage-prefix-delta")
+			}
 			record, e := DecodeRecord(v)
 			if e != nil {
 				return kvstore.Classification{}, e

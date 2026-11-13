@@ -224,6 +224,44 @@ legacy `partitioned` and `reserved-shared` policies) only marks children cold;
 it never forces an unchanged child to Hash. Old Prefix versions remain available
 to historical parents; a converted node is not also written as Prefix.
 
+### Prefix delta versions
+
+A modified Prefix branch normally rewrites every child reference, including the
+32-byte digests of its unchanged Hash siblings. With `Config.DeltaInterval` set
+(`HybridDeltaInterval` in a `hybrid-compare` config; zero, the default, writes no
+deltas) a branch that is not resident in the cache is stored as the difference
+from its previous version when that is smaller: a changed-slot mask and only the
+changed references. Reading always supports deltas, so a store written with them
+stays readable with the interval set back to zero.
+
+- The base is the node's previous version. When that version is Prefix it is the
+  predecessor of the record's own key, so no locator is stored. When it is a Hash
+  version the delta carries that version's digest, because Hash Store is
+  content addressed.
+- Each delta records its depth, the distance to the nearest full record or Hash
+  version. A modified branch is written in full once its chain would exceed
+  `DeltaInterval` (at most 64), so a read resolves at most that many records. A
+  depth that does not follow the chain is corrupt.
+- Hash Store values stay canonical RLP. Only branches use deltas; leaves,
+  extensions, branches whose own value changed and nodes whose previous version
+  is missing or of another kind are written in full.
+- Every read path returns complete records: the column read layer resolves a
+  delta before any cache, parser or proof code sees it, so caches hold complete
+  records and no step merges deltas in memory.
+- A delta needs the node's previous version, so the commit opens each modified
+  branch's own previous record (`CommitStats.DeltaBaseReads`), resident or not;
+  no unchanged node is read or rewritten for this purpose. With
+  `DeltaInterval` zero the commit reads no old node record, as before.
+  `CommitStats.DeltaRecords` and `DeltaBytes` count the deltas, and the storage
+  inventory reports them as `account-prefix-delta` and `storage-prefix-delta`.
+
+On the chain-shaped workload above (one run each, GoLevelDB, interval 8) deltas
+cut Hybrid's growth from 16.1 MB to 7.0 MB with Hash initialization (24% to 67%
+below Archive) and from 5.10 MB to 5.03 MB with Prefix initialization, where
+records already omit most digests. Median historical-query service time rose from
+128 to 139 microseconds at interval 8 and to 203 at interval 32 (single run, so
+noisy).
+
 ### Transaction execution and commits
 
 Transactions execute serially. StateDB buffers logical key writes and supports

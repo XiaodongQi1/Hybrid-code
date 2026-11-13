@@ -42,7 +42,20 @@ func (r *kvEngine) measure() (storageMeasurement, error) {
 			f.KeyBytes += uint64(len(key))
 			f.ValueBytes += uint64(len(value))
 			var kind mpt.CanonicalKind
-			if cf == prefixColumn {
+			if cf == prefixColumn && isDelta(value) {
+				d, e := decodeDelta(value)
+				if e != nil {
+					return e
+				}
+				kind = mpt.CanonicalBranch
+				prefixDigests[d.Hash] = true
+				for i := 0; i < 16; i++ {
+					if d.Changed&(1<<i) != 0 && d.Refs[i].Kind == Hash {
+						f.ExplicitHashBytes += 32
+					}
+					f.EmbeddedBytes += uint64(len(d.Refs[i].Inline))
+				}
+			} else if cf == prefixColumn {
 				record, e := DecodeRecord(value)
 				if e != nil {
 					return e

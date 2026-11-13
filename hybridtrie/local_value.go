@@ -58,6 +58,9 @@ func (r *trieReader) localValue(ctx NodeKey, want mpt.Hash, source ReferenceKind
 				if e = b.charge(len(key) + len(raw)); e != nil {
 					return nil, e
 				}
+				if raw, e = normalizePrefix(r.snapshot, at, raw, b.charge); e != nil {
+					return nil, e
+				}
 				rec, err = DecodeRecord(raw)
 				if err == nil {
 					err = rec.ValidateAt(ctx)

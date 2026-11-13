@@ -288,6 +288,10 @@ func (s *executionReads) read(e *executionReadEntry, cursor *diskPredecessor, ba
 				}
 			}
 		}
+		if err == nil && !headerOnly && isDelta(raw) {
+			// Cached bodies and parsers see complete records only.
+			raw, err = normalizePrefix(s.snapshot, NodeKey{e.key.ID, e.key.path(), loc.Height}, raw, nil)
+		}
 		if err == nil {
 			if len(raw) < recordHeaderBytes || len(raw) > MaxRecordBytes || logicalSize > MaxRecordBytes {
 				err = ErrCorrupt

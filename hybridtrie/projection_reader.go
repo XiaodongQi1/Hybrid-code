@@ -25,6 +25,7 @@ type projectionReader struct {
 type physicalProjectionNode struct {
 	record Record
 	route  projectionRoute
+	depth  uint8 // stored delta depth of a Prefix node, zero otherwise
 }
 
 // retainedPhysicalRoute follows only physical locators. It never reconstructs
@@ -42,6 +43,21 @@ func (p *projectionReader) retainedPhysicalRoute(path []byte, want mpt.Hash, nee
 	if !p.local {
 		return p.retainedRoute(path, want)
 	}
+	_, route, e := p.physicalWalk(path, want, true, needHeight)
+	return route, e
+}
+
+// oldVersion opens the previous version of the node at path by physical
+// routing alone, for delta encoding in a commit. ErrNotFound means the old tree
+// has no node at exactly this path. The node's own digest is not checked here:
+// the commit never trusts it, it only chooses an encoding from it.
+func (p *projectionReader) oldVersion(path []byte) (physicalProjectionNode, error) {
+	n, _, e := p.physicalWalk(path, mpt.Hash{}, false, true)
+	return n, e
+}
+
+func (p *projectionReader) physicalWalk(path []byte, want mpt.Hash, checkWant, needHeight bool) (physicalProjectionNode, projectionRoute, error) {
+	var zeroNode physicalProjectionNode
 	if p.physical == nil {
 		p.physical = make(map[string]physicalProjectionNode)
 	}
@@ -49,7 +65,7 @@ func (p *projectionReader) retainedPhysicalRoute(path []byte, want mpt.Hash, nee
 		var err error
 		p.cursor.diskPredecessor, _, err = openPredecessor(p.snapshot, prefixColumn)
 		if err != nil {
-			return projectionRoute{}, err
+			return zeroNode, projectionRoute{}, err
 		}
 	}
 	var version uint64
@@ -70,59 +86,67 @@ func (p *projectionReader) retainedPhysicalRoute(path []byte, want mpt.Hash, nee
 			// Prefix references omit the child digest; only a Hash reference
 			// carries one to compare.
 			if route.hash != (mpt.Hash{}) && route.hash != want {
-				return projectionRoute{}, ErrHashMismatch
+				return zeroNode, projectionRoute{}, ErrHashMismatch
 			}
 			route.hash = want
-			return route, nil
+			return zeroNode, route, nil
 		}
 		if !ok {
 			ctx := NodeKey{p.id, at, p.height}
 			var rec Record
 			var err error
+			b.depth = 0
 			if route.source == Hash {
 				rec, _, err = p.hash(ctx, route.hash, &b)
 			} else if route.source == Prefix {
 				rec, err = p.prefix(ctx, &b)
 				route.height = version
 			} else {
-				return projectionRoute{}, ErrCorrupt
+				return zeroNode, projectionRoute{}, ErrCorrupt
 			}
 			if err != nil {
-				return projectionRoute{}, err
+				return zeroNode, projectionRoute{}, err
 			}
 			if route.hash != (mpt.Hash{}) && rec.Hash != route.hash {
-				return projectionRoute{}, ErrHashMismatch
+				return zeroNode, projectionRoute{}, ErrHashMismatch
 			}
 			route.hash = rec.Hash
 			route.opened = true
-			n = physicalProjectionNode{rec, route}
+			n = physicalProjectionNode{rec, route, b.depth}
 			if len(p.physical) < 4096 {
 				p.physical[string(at)] = n
 			}
 		}
 		if bytes.Equal(at, path) {
-			if n.route.hash != want {
-				return projectionRoute{}, ErrHashMismatch
+			if checkWant && n.route.hash != want {
+				return zeroNode, projectionRoute{}, ErrHashMismatch
 			}
-			return n.route, nil
+			return n, n.route, nil
 		}
 		if len(at) >= len(path) {
-			return projectionRoute{}, ErrNotFound
+			return zeroNode, projectionRoute{}, ErrNotFound
 		}
 		slot := 0
-		if n.record.Kind == mpt.CanonicalBranch {
+		switch n.record.Kind {
+		case mpt.CanonicalBranch:
 			slot = int(path[len(at)])
+			if n.record.Children[slot].Kind == Empty {
+				// The old tree has no child here; a commit may be creating it.
+				return zeroNode, projectionRoute{}, ErrNotFound
+			}
+		case mpt.CanonicalLeaf:
+			return zeroNode, projectionRoute{}, ErrNotFound
 		}
 		loc, err := locateChild(NodeKey{p.id, at, p.height}, n.record, slot)
 		if err != nil {
-			return projectionRoute{}, err
+			return zeroNode, projectionRoute{}, err
 		}
 		if len(loc.Target.Path) <= len(at) || !bytes.HasPrefix(path, loc.Target.Path) {
-			return projectionRoute{}, ErrNotFound
+			return zeroNode, projectionRoute{}, ErrNotFound
 		}
 		ref := n.record.Children[slot]
 		if ref.Kind != Prefix && ref.Kind != Hash {
-			return projectionRoute{}, ErrNotFound
+			return zeroNode, projectionRoute{}, ErrNotFound
 		}
 		at = loc.Target.Path
 		route = projectionRoute{source: ref.Kind, hash: ref.Hash}
@@ -237,6 +261,9 @@ func (p *projectionReader) read(path []byte, want mpt.Hash) ([]byte, projectionR
 			data, e = p.snapshot.get(prefixColumn, key)
 			if e == nil {
 				e = b.charge(len(key) + len(data))
+			}
+			if e == nil {
+				data, e = normalizePrefix(p.snapshot, NodeKey{p.id, path, route.height}, data, b.charge)
 			}
 			if e == nil {
 				rec, e = DecodeRecord(data)

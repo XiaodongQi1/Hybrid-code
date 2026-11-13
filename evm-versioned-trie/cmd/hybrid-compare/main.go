@@ -43,6 +43,7 @@ type config struct {
 	ParallelProof                 ht.ParallelProofConfig `json:",omitempty,omitzero"`
 	HybridBoundary                *boundaryTemplate      `json:",omitempty"`
 	PrefixSnapshot                bool                   `json:",omitempty"`
+	HybridDeltaInterval           uint8                  `json:",omitempty"`
 	Methods, Suites               []string
 	Engine                        kvstore.Engine
 	Resources                     comparison.ResourceBudget

@@ -113,6 +113,9 @@ type readBudget struct {
 	stats        *ResolutionStats
 	prefix       diskPredecessor
 	resolved     func(NodeKey, NodeKey)
+	// depth is the stored delta depth of the last Prefix value read (zero for a
+	// full record or a Hash version). It is reported only to the commit writer.
+	depth uint8
 }
 
 // ResolutionStats counts logical resolver operations, not physical disk I/O.
@@ -205,6 +208,13 @@ func (r *trieReader) prefixBytes(key NodeKey, b *readBudget, headerOnly bool) (N
 			return NodeKey{}, nil, ErrNotFound
 		}
 		return NodeKey{}, nil, e
+	}
+	if !headerOnly {
+		b.depth = storedDepth(raw)
+		// Everything above this layer sees complete records only.
+		if raw, e = normalizePrefix(r.snapshot, matched, raw, b.charge); e != nil {
+			return NodeKey{}, nil, e
+		}
 	}
 	return matched, raw, nil
 }

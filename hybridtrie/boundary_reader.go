@@ -463,6 +463,9 @@ func (r *boundaryReader) loadLocatedInto(pos forestPosition, want mpt.Hash, loca
 		if e = b.charge(len(raw) + len(key)); e != nil {
 			return nil, n, e
 		}
+		if raw, e = normalizePrefix(r.base.snapshot, actual, raw, b.charge); e != nil {
+			return nil, n, e
+		}
 		rec, e = DecodeRecord(raw)
 	} else {
 		if e = ensureCursor(); e != nil {

@@ -86,6 +86,7 @@ func (x *experiment) open(method, path string, create, ro bool, art *artifact.St
 	case "hybrid":
 		c := x.plan.HybridConfig(x.id)
 		c.ParallelProof = x.cfg.ParallelProof
+		c.Store.DeltaInterval = x.cfg.HybridDeltaInterval
 		c.Initialization = backend.InitializationHashColdBulk
 		if x.cfg.PrefixSnapshot {
 			c.Initialization = backend.InitializationPrefix

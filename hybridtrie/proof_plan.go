@@ -661,6 +661,15 @@ func (w *proofReadWorker) prefix(p *plannedProof, ctx NodeKey, header bool) ([]b
 	if e = matchEncodedNodeKey(found, target); e != nil {
 		return nil, ErrNotFound
 	}
+	if !header && isDelta(raw) {
+		at, e := DecodeNodeKey(found)
+		if e != nil {
+			return nil, e
+		}
+		if raw, e = normalizePrefix(w.session.view.snapshot, at, raw, func(n int) error { return w.charge(p, 0, n, n) }); e != nil {
+			return nil, e
+		}
+	}
 	if header {
 		if len(raw) != recordHeaderBytes {
 			return nil, ErrCorrupt

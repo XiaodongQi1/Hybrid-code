@@ -28,6 +28,11 @@ type Config struct {
 	Format, Scheme, CodecID, WorkloadID                           string
 	InitialHeight                                                 uint64
 	MaxBatchBytes, MaxReadBytes, MaxReadNodes, MaxProjectionNodes uint64
+	// DeltaInterval is the longest delta chain written for a Prefix branch: a
+	// modified branch is stored as the difference from its previous version while
+	// that version's chain is shorter, otherwise as a full record. Zero writes no
+	// deltas. Reading is always supported. See delta.go.
+	DeltaInterval uint8 `json:",omitempty"`
 	Storage                                                       *kvstore.Options `json:",omitempty"`
 }
 
@@ -35,7 +40,7 @@ func DefaultConfig(codec, workload string) Config {
 	return Config{Format: StoreFormat, Scheme: LogicalScheme, CodecID: codec, WorkloadID: workload, MaxBatchBytes: 128 << 20, MaxReadBytes: 32 << 20, MaxReadNodes: 4096, MaxProjectionNodes: 1 << 20}
 }
 func (c Config) validate() error {
-	if c.Format != StoreFormat || c.Scheme != LogicalScheme || c.InitialHeight > MaxHeight || len(c.WorkloadID) == 0 || len(c.WorkloadID) > 256 || c.MaxBatchBytes < 4096 || c.MaxBatchBytes > 128<<20 || c.MaxReadBytes < 1024 || c.MaxReadBytes > 128<<20 || c.MaxReadNodes == 0 || c.MaxReadNodes > 1<<20 || c.MaxProjectionNodes == 0 || c.MaxProjectionNodes > 1<<24 {
+	if c.Format != StoreFormat || c.Scheme != LogicalScheme || c.InitialHeight > MaxHeight || len(c.WorkloadID) == 0 || len(c.WorkloadID) > 256 || c.MaxBatchBytes < 4096 || c.MaxBatchBytes > 128<<20 || c.MaxReadBytes < 1024 || c.MaxReadBytes > 128<<20 || c.MaxReadNodes == 0 || c.MaxReadNodes > 1<<20 || c.MaxProjectionNodes == 0 || c.MaxProjectionNodes > 1<<24 || c.DeltaInterval > MaxDeltaInterval {
 		return ErrCorrupt
 	}
 	if c.CodecID != "ethereum-mpt" && c.CodecID != "raw-bytes/v1" {
@@ -262,6 +267,10 @@ type CommitStats struct {
 	ProjectionNanos, WriteNanos                                      uint64
 	LifecycleRecords, LifecycleBytes, OwnerRecords, OwnerBytes       uint64
 	PrefixRecords, HashRecords, PrefixBytes, HashBytes, ClosureReads uint64
+	// DeltaRecords and DeltaBytes are the part of PrefixRecords/PrefixBytes written
+	// as deltas; DeltaBaseReads counts previous-version records opened to encode
+	// them, which is the commit path's only added read.
+	DeltaRecords, DeltaBytes, DeltaBaseReads uint64
 	// Logical values returned by Hash Store probes, not physical disk read bytes.
 	ClosureReadBytes uint64
 	// Newly materialized Hash records outside this block's changed-node digests:
@@ -571,6 +580,13 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 				return e
 			}
 			p.stats.PrefixEncodes++
+			if raw, e = s.deltaOrFull(p, oldReader, key, record, raw); e != nil {
+				return e
+			}
+			if isDelta(raw) {
+				p.stats.DeltaRecords++
+				p.stats.DeltaBytes += uint64(len(parent.encoded) + len(raw))
+			}
 			if parent.candidate {
 				// A candidate has no staged placeholder: it keeps its mixed
 				// Prefix/Hash child references as an ordinary Prefix record.
@@ -872,10 +888,14 @@ func readPrefix(snap diskSnapshot, key NodeKey) (Record, error) {
 	if e != nil {
 		return Record{}, e
 	}
-	if _, e = MatchPredecessor(found, key); e != nil {
+	matched, e := MatchPredecessor(found, key)
+	if e != nil {
 		if errors.Is(e, ErrPositionMismatch) {
 			return Record{}, ErrNotFound
 		}
+		return Record{}, e
+	}
+	if raw, e = normalizePrefix(snap, matched, raw, nil); e != nil {
 		return Record{}, e
 	}
 	r, e := DecodeRecord(raw)
@@ -898,4 +918,45 @@ func forestPending(f *ForestUpdate, id uint64) ([]preparedChange, bool) {
 	}
 	c, ok := f.pendingChanges[id]
 	return c, ok
+}
+
+// deltaOrFull returns the smaller of the full encoding and a delta against the
+// previous version of the node at key. Only a modified branch that stays Prefix
+// reaches here, and only its own previous version is read: no unchanged node is
+// opened or rewritten for this purpose.
+func (s *Store) deltaOrFull(p *writePlan, old *projectionReader, key NodeKey, record Record, full []byte) ([]byte, error) {
+	k := s.cfg.DeltaInterval
+	if k == 0 || old == nil || record.Kind != mpt.CanonicalBranch {
+		return full, nil
+	}
+	n, e := old.oldVersion(key.Path)
+	if errors.Is(e, ErrNotFound) {
+		return full, nil // new or re-created path: no previous version to differ from
+	}
+	if e != nil {
+		return nil, e
+	}
+	p.stats.DeltaBaseReads++
+	if n.record.Kind != mpt.CanonicalBranch {
+		return full, nil
+	}
+	hashBase := n.route.source == Hash
+	depth := uint8(1)
+	if !hashBase {
+		if n.route.source != Prefix {
+			return full, nil
+		}
+		if int(n.depth)+1 > int(k) {
+			return full, nil // checkpoint: write a full record
+		}
+		depth = n.depth + 1
+	}
+	delta, ok, e := encodeDelta(n.record, record, hashBase, n.route.hash, depth)
+	if e != nil {
+		return nil, e
+	}
+	if !ok || len(delta) >= len(full) {
+		return full, nil
+	}
+	return delta, nil
 }

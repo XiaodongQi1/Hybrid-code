@@ -230,6 +230,13 @@ func (d *decoder) inline() ([]byte, error) {
 }
 
 func recordKind(tag byte) (mpt.CanonicalKind, error) {
+	if tag&tagDelta != 0 {
+		// A delta is a branch with only the delta flags set.
+		if tag&^(3|tagDelta|tagHashBase) != 0 || mpt.CanonicalKind(tag&3) != mpt.CanonicalBranch {
+			return 0, ErrCorrupt
+		}
+		return mpt.CanonicalBranch, nil
+	}
 	kind := mpt.CanonicalKind(tag & 3)
 	if tag&0xc0 != 0 || kind > mpt.CanonicalLeaf {
 		return 0, ErrCorrupt
@@ -253,6 +260,9 @@ func decodeRecord(raw []byte, borrow bool) (Record, error) {
 	var r Record
 	if len(raw) < recordHeaderBytes {
 		return r, ErrCorrupt
+	}
+	if raw[0]&tagDelta != 0 {
+		return r, errNeedsBase
 	}
 	if len(raw) > MaxRecordBytes {
 		return r, ErrLimit
