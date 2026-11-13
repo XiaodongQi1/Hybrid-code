@@ -90,7 +90,7 @@ func (r *boundaryReader) materializedLocation(path []byte, h mpt.Hash, supplied 
 	var cursor projectionCursor
 	defer cursor.close()
 	reader := projectionReader{trieReader: &base, cursor: &cursor}
-	route, e := reader.retainedPhysicalRoute(path, h)
+	route, e := reader.retainedPhysicalRoute(path, h, true)
 	if e != nil {
 		return mpt.NodeLocation{}, e
 	}

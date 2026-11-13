@@ -526,7 +526,12 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 					route = forest.retainedRoutes[position(u.TrieID, loc.Target.Path)]
 				}
 				if route.hash != want || route.source != Prefix && route.source != Hash {
-					route, e = oldReader.retainedPhysicalRoute(loc.Target.Path, want)
+					// Only a resident parent publishes child heights as routing
+						// hints; for any other parent the edges are discarded, so the
+						// sibling's own record need not be read.
+						needHeight := forest != nil && forest.projectedEdges != nil && forest.cacheBoundary != nil &&
+							forest.cacheBoundary.find(position(key.TrieID, key.Path)) >= 0
+						route, e = oldReader.retainedPhysicalRoute(loc.Target.Path, want, needHeight)
 				}
 				if e != nil {
 					return e

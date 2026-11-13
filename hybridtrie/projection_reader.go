@@ -31,7 +31,12 @@ type physicalProjectionNode struct {
 // an old canonical parent or fetches siblings just to recover their digests.
 // Cached ancestors let subsequent requests continue down already opened paths.
 // This fallback is needed after cold reads or when bounded resident hints fill.
-func (p *projectionReader) retainedPhysicalRoute(path []byte, want mpt.Hash) (projectionRoute, error) {
+//
+// When needHeight is false the caller only needs the child's physical kind and
+// digest, both already recorded by its authenticated parent, so the child's own
+// record is not opened (route.height is then unknown). Callers that publish the
+// physical height of a resident edge must pass true.
+func (p *projectionReader) retainedPhysicalRoute(path []byte, want mpt.Hash, needHeight bool) (projectionRoute, error) {
 	// Public imports retain strict body authentication. Only a pinned local
 	// execution forest may rely on physical routing without rebuilding hashes.
 	if !p.local {
@@ -61,6 +66,15 @@ func (p *projectionReader) retainedPhysicalRoute(path []byte, want mpt.Hash) (pr
 	}
 	for {
 		n, ok := p.physical[string(at)]
+		if !ok && !needHeight && len(at) > 0 && bytes.Equal(at, path) {
+			// Prefix references omit the child digest; only a Hash reference
+			// carries one to compare.
+			if route.hash != (mpt.Hash{}) && route.hash != want {
+				return projectionRoute{}, ErrHashMismatch
+			}
+			route.hash = want
+			return route, nil
+		}
 		if !ok {
 			ctx := NodeKey{p.id, at, p.height}
 			var rec Record
