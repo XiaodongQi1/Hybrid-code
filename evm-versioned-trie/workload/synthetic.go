@@ -25,14 +25,14 @@ type Options struct {
 
 func Synthetic(o Options) (block.Workload, error) {
 	w := block.Workload{Schema: block.WorkloadSchema, ZeroGenesis: true}
-	if o.BackgroundAccounts < 1 || o.BackgroundAccounts > 100_000 || o.Blocks < 1 || o.Blocks > 2000 || o.TransactionsPerBlock < 1 || o.TransactionsPerBlock > 1000 || o.Contracts < 1 || o.Contracts > 1000 {
-		return w, fmt.Errorf("synthetic workload outside small-development limits")
+	if o.BackgroundAccounts < 1 || o.Blocks < 1 || o.TransactionsPerBlock < 1 || o.Contracts < 1 {
+		return w, fmt.Errorf("synthetic workload needs at least one account, block, transaction and contract")
 	}
 	if o.StorageSlots == 0 {
 		o.StorageSlots = 4
 	}
-	if o.StorageSlots < 1 || o.StorageSlots > 4096 {
-		return w, fmt.Errorf("storage slot count outside development limits")
+	if o.StorageSlots < 1 {
+		return w, fmt.Errorf("storage slot count must be positive")
 	}
 	switch o.Pattern {
 	case "", "mixed", "account-hot", "account-sweep", "storage-hot", "rotate", "migrate", "revisit":

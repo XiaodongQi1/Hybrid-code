@@ -21,6 +21,10 @@ import (
 	"github.com/XiaodongQi1/Hybrid-code/evm-state/block"
 )
 
+// A recorded source account row holds all of its storage inline and must fit
+// the engine value limit (64 MiB) at roughly 150 bytes per slot.
+const maxRowSlots = 400_000
+
 type options struct {
 	Accounts, Contracts, MaxSlots, Blocks, TxPerBlock int
 	Seed                                              int64
@@ -46,10 +50,10 @@ func main() {
 	out := flag.String("out", "", "new output directory")
 	flag.IntVar(&o.Accounts, "accounts", 100000, "externally owned accounts")
 	flag.IntVar(&o.Contracts, "contracts", 3000, "contracts")
-	flag.IntVar(&o.MaxSlots, "max-genesis-slots", 300000, "cap on total genesis storage slots")
+	flag.IntVar(&o.MaxSlots, "max-genesis-slots", 0, "optional cap on total genesis storage slots (0 means none)")
 	flag.IntVar(&o.MinSlots, "min-contract-slots", 5, "smallest contract storage size before the tail")
-	flag.IntVar(&o.MaxContractSlots, "max-contract-slots", 65536, "cap on one contract's genesis storage; its recorded source row (about 150 bytes per slot) must fit the config's MaxBatchBytes and the 64 MiB engine value limit")
-	flag.Float64Var(&o.Alpha, "pareto-alpha", 0.9, "contract storage size tail exponent (smaller is heavier)")
+	flag.IntVar(&o.MaxContractSlots, "max-contract-slots", 0, "optional cap on one contract's genesis storage (0 means none)")
+	flag.Float64Var(&o.Alpha, "pareto-alpha", 1.0, "contract storage size tail exponent (smaller is heavier)")
 	flag.IntVar(&o.Blocks, "blocks", 200, "execution blocks")
 	flag.IntVar(&o.TxPerBlock, "tx", 64, "transactions per block")
 	flag.Float64Var(&o.TransferShare, "transfer-share", 0.6, "fraction of transactions that are value transfers")
@@ -58,7 +62,7 @@ func main() {
 	flag.Int64Var(&o.Seed, "seed", 1, "deterministic seed")
 	flag.Parse()
 	if *out == "" || o.Accounts < 1 || o.Contracts < 1 || o.Blocks < 1 || o.TxPerBlock < 1 || o.ZipfS <= 1 || o.Alpha <= 0 ||
-		o.TransferShare < 0 || o.TransferShare > 1 || o.NewSlotShare < 0 || o.NewSlotShare > 1 || o.MinSlots < 1 || o.MaxContractSlots < 1 || o.MaxSlots < 0 {
+		o.TransferShare < 0 || o.TransferShare > 1 || o.NewSlotShare < 0 || o.NewSlotShare > 1 || o.MinSlots < 1 || o.MaxContractSlots < 0 || o.MaxSlots < 0 {
 		fmt.Fprintln(os.Stderr, "usage: hybrid-genstate -out NEWDIR [flags]")
 		os.Exit(2)
 	}
@@ -125,11 +129,14 @@ func run(o options, out string) error {
 		contracts[i].addr = fresh()
 		// Pareto tail: most contracts are small, a few hold most of the storage.
 		n := int(float64(o.MinSlots) * math.Pow(1-rng.Float64(), -1/o.Alpha))
-		if n > o.MaxContractSlots {
+		if o.MaxContractSlots > 0 && n > o.MaxContractSlots {
 			n = o.MaxContractSlots
 		}
-		if n > o.MaxSlots-total {
+		if o.MaxSlots > 0 && n > o.MaxSlots-total {
 			n = o.MaxSlots - total
+		}
+		if n > maxRowSlots {
+			return fmt.Errorf("contract %d would hold %d slots; its recorded source row (about 150 bytes per slot) would exceed the 64 MiB engine value limit, so set -max-contract-slots to at most %d", i, n, maxRowSlots)
 		}
 		if n < 0 {
 			n = 0
