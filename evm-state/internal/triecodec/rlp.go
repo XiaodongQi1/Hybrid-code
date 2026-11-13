@@ -50,37 +50,6 @@ func splitRLP(b []byte) (rlpElement, []byte, error) {
 	return rlpElement{b[:end], b[offset:end], list}, b[end:], nil
 }
 
-func encodeRLP(payload []byte, list bool) []byte {
-	if !list && len(payload) == 1 && payload[0] < 0x80 {
-		return append([]byte(nil), payload...)
-	}
-	short, long := byte(0x80), byte(0xb7)
-	if list {
-		short, long = 0xc0, 0xf7
-	}
-	if len(payload) < 56 {
-		return append([]byte{short + byte(len(payload))}, payload...)
-	}
-	var length [8]byte
-	n := uint64(len(payload))
-	i := 8
-	for n > 0 {
-		i--
-		length[i] = byte(n)
-		n >>= 8
-	}
-	out := []byte{long + byte(8-i)}
-	out = append(out, length[i:]...)
-	return append(out, payload...)
-}
-func encodeList(items [][]byte) []byte {
-	var b []byte
-	for _, v := range items {
-		b = append(b, v...)
-	}
-	return encodeRLP(b, true)
-}
-
 type nodeView struct {
 	items       [][]byte
 	leaf        bool
@@ -177,17 +146,4 @@ func validateRef(e rlpElement, c Config, nesting int, prefix uint64) error {
 		return ErrFormat
 	}
 	return nil
-}
-
-// listEncodedLen is also the length of a string encoding except for a single
-// byte below 0x80. Callers bound payload before performing any allocation.
-func listEncodedLen(payload uint64) uint64 {
-	if payload < 56 {
-		return 1 + payload
-	}
-	width := uint64(0)
-	for n := payload; n > 0; n >>= 8 {
-		width++
-	}
-	return 1 + width + payload
 }

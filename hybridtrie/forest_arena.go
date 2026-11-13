@@ -67,11 +67,10 @@ type forestEvent struct {
 	Used, Access bool
 }
 type forestHeat struct {
-	sketch  [2]heatStats
-	events  []forestEvent
-	n       int
-	height  uint64
-	started bool
+	sketch [2]heatStats
+	events []forestEvent
+	n      int
+	height uint64
 }
 
 type ClassCacheStats struct{ NodeReserveBytes, HashReserveBytes, NodeLiveBytes, HashLiveBytes, NodeSharedBytes, HashSharedBytes, NodeHits, NodeMisses uint64 }

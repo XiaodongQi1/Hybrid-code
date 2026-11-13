@@ -74,10 +74,6 @@ func (b *Backend) ImportSnapshotContext(ctx context.Context, header block.InputB
 	b.lastSnapshot = report
 	return r, report, e
 }
-func (b *Backend) importSnapshot(header block.InputBlock, next func() (block.Allocation, error), expected *mpt.Hash) (result *Result, report SnapshotReport, err error) {
-	return b.importSnapshotWithContext(context.Background(), header, next, expected)
-}
-
 func (b *Backend) importSnapshotWithContext(ctx context.Context, header block.InputBlock, next func() (block.Allocation, error), expected *mpt.Hash) (result *Result, report SnapshotReport, err error) {
 	return b.importSnapshotRecorded(ctx, header, next, expected, nil)
 }

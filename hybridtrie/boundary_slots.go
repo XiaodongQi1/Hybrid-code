@@ -2,15 +2,7 @@ package hybridtrie
 
 // These indexes belong to the single resident cache, not to a pending cache.
 func (b *boundaryBank) node(slot int) *boundaryNode { return &b.Nodes[slot] }
-func (b *boundaryBank) edit(slot int) *boundaryNode {
-	word, mask := slot/64, uint64(1)<<uint(slot%64)
-	if b.tracking && b.marked[word]&mask == 0 {
-		b.marked[word] |= mask
-		b.changed = append(b.changed, int32(slot))
-	}
-	return &b.Nodes[slot]
-}
-func (b *boundaryBank) beginChanges() { b.finishChanges(); b.tracking = true; b.Pruned = 0 }
+func (b *boundaryBank) beginChanges()               { b.finishChanges(); b.tracking = true; b.Pruned = 0 }
 func (b *boundaryBank) finishChanges() {
 	for _, slot := range b.changed {
 		if b.typed() {
