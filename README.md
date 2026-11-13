@@ -255,7 +255,14 @@ stays readable with the interval set back to zero.
   `CommitStats.DeltaRecords` and `DeltaBytes` count the deltas, and the storage
   inventory reports them as `account-prefix-delta` and `storage-prefix-delta`.
 
-On the chain-shaped workload above (one run each, GoLevelDB, interval 8) deltas
+After a 200-block warmup, growth over the next 200 blocks (64 transactions per
+block, one run each, GoLevelDB; computed as a 400-block run minus the shared first
+200 blocks) was 21.2 MB for Archive, 7.6 MB for Path, 14.1 MB for Hybrid with
+Hash initialization and 6.9 MB with interval 8 (67% below Archive, 9% below
+Path), and 5.2 MB with Prefix initialization and 5.1 MB with interval 8. Deltas
+help Hash initialization and barely change Prefix initialization.
+
+On the first 200 blocks (same setup, interval 8) deltas
 cut Hybrid's growth from 16.1 MB to 7.0 MB with Hash initialization (24% to 67%
 below Archive) and from 5.10 MB to 5.03 MB with Prefix initialization, where
 records already omit most digests. Median historical-query service time rose from
