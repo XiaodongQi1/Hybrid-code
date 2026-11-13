@@ -139,3 +139,30 @@ func runSourceResume(t *testing.T, engine kvstore.Engine) {
 		t.Fatal("corrupted account source was trusted")
 	}
 }
+
+// One contract whose recorded source row (account JSON with all storage inline)
+// is larger than a single node record must still build, scan and verify: the
+// row is bounded by BatchBytes and the engine's value limit, not MaxRecordBytes.
+func TestSourceLargeContractRowExceedsNodeRecordLimit(t *testing.T) {
+	c, _ := sourceFixture(kvstore.LevelDB)
+	c.BatchBytes = 8 << 20
+	c.ChunkEntries = 256
+	a := block.Allocation{Address: common.BigToAddress(big.NewInt(1)), Balance: big.NewInt(1), Code: []byte{0}, Storage: map[common.Hash]common.Hash{}}
+	for i := 1; i <= 12000; i++ {
+		a.Storage[common.BigToHash(big.NewInt(int64(i)*7919))] = common.BigToHash(big.NewInt(int64(i)))
+	}
+	b, e := Build(context.Background(), filepath.Join(t.TempDir(), "source"), c, allocationIterator([]block.Allocation{a}))
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer b.Close()
+	s, e := b.OpenSource()
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer s.Close()
+	m, e := Verify(context.Background(), s, c.Header)
+	if e != nil || m.Accounts != 1 {
+		t.Fatal(m, e)
+	}
+}

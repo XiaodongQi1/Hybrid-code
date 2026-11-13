@@ -8,8 +8,8 @@
     "ApplicationCacheBytes": 8388608,
     "BlockCacheBytes": 2097152,
     "GlobalWriteBufferBytes": 2097152,
-    "MaxBatchBytes": 8388608,
-    "MaxStagingBytes": 8388608,
+    "MaxBatchBytes": 67108864,
+    "MaxStagingBytes": 67108864,
     "Compression": "none"
   },
   "Trials": 1,

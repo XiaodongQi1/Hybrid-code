@@ -48,7 +48,7 @@ func main() {
 	flag.IntVar(&o.Contracts, "contracts", 3000, "contracts")
 	flag.IntVar(&o.MaxSlots, "max-genesis-slots", 300000, "cap on total genesis storage slots")
 	flag.IntVar(&o.MinSlots, "min-contract-slots", 5, "smallest contract storage size before the tail")
-	flag.IntVar(&o.MaxContractSlots, "max-contract-slots", 4096, "cap on one contract's genesis storage; the snapshot builder fails (size limit) above roughly 5,000-8,000 slots per trie")
+	flag.IntVar(&o.MaxContractSlots, "max-contract-slots", 65536, "cap on one contract's genesis storage; its recorded source row (about 150 bytes per slot) must fit the config's MaxBatchBytes and the 64 MiB engine value limit")
 	flag.Float64Var(&o.Alpha, "pareto-alpha", 0.9, "contract storage size tail exponent (smaller is heavier)")
 	flag.IntVar(&o.Blocks, "blocks", 200, "execution blocks")
 	flag.IntVar(&o.TxPerBlock, "tx", 64, "transactions per block")

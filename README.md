@@ -604,22 +604,21 @@ re-stores the digests of its Hash siblings, as an archive node's RLP does.
   is much smaller.
 
 Measured with `hybrid-compare` on the chain-shaped workload from
-`hybrid-genstate` (100,000 accounts, 3,000 contracts, 158,595 genesis storage
-slots, 200 blocks of 64 transactions, GoLevelDB, no compression, one trial,
+`hybrid-genstate` (100,000 accounts, 3,000 contracts, 300,000 genesis storage
+slots (largest contract 65,536), 200 blocks of 64 transactions, GoLevelDB, no compression, one trial,
 configs `hybrid-compare-chainlike-{hash,prefix}.example.json`). Growth is final
 minus initial logical state bytes (keys plus values):
 
 | Method | Growth | Versus archive |
 | --- | --- | --- |
-| Archive | 20.3 MB | |
-| Path | 7.3 MB | 64% less |
-| Hybrid, Hash initialization | 15.2 MB | 25% less |
-| Hybrid, Prefix initialization | 5.0 MB | 75% less |
+| Archive | 21.3 MB | |
+| Path | 7.5 MB | 65% less |
+| Hybrid, Hash initialization | 16.2 MB | 24% less |
+| Hybrid, Prefix initialization | 5.1 MB | 76% less |
 
-Prefix initialization also starts smaller (40.3 MB against 47.3 MB for Hash)
+Prefix initialization also starts smaller (59.4 MB against 70.1 MB for Hash)
 because its initial records omit Prefix-child digests. These are one run on
-synthetic data with a per-contract storage cap (the snapshot builder rejects a
-single contract of roughly 5,000-8,000 slots), not real chain state, so treat
+synthetic data, not real chain state, so treat
 them as an illustration of the mechanism, not a prediction. The saving on real
 state depends on how many unchanged siblings are already Prefix. Identical
 subtrees at different positions are stored once per position in the Prefix

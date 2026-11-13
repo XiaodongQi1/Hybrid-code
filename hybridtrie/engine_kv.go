@@ -161,7 +161,14 @@ func (s *kvSnapshot) scan(cf column, start, end []byte, visit func([]byte, []byt
 		if e := it.Error(); e != nil {
 			return kvError(e)
 		}
-		if len(key) > 4096 || len(value) > MaxRecordBytes+4096 {
+		// Node records are bounded by MaxRecordBytes. Metadata rows may hold a
+		// recorded source account with all its storage inline, which can exceed it;
+		// those are bounded by the engine's value limit (and the builder's batch).
+		limit := MaxRecordBytes + 4096
+		if cf == metaColumn {
+			limit = kvstore.MaxValueBytes
+		}
+		if len(key) > 4096 || len(value) > limit {
 			return ErrLimit
 		}
 		if len(end) > 0 && bytes.Compare(key, end) >= 0 {
