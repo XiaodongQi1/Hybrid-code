@@ -42,10 +42,17 @@ func TestSyntheticCachePatternsAndLimits(t *testing.T) {
 			}
 		}
 	}
-	for _, o := range []Options{{BackgroundAccounts: 8, Blocks: 3, TransactionsPerBlock: 3, Contracts: 1, Pattern: "unknown"}, {BackgroundAccounts: 8, Blocks: 3, TransactionsPerBlock: 3, Contracts: 1, StorageSlots: 4097}} {
+	for _, o := range []Options{{BackgroundAccounts: 8, Blocks: 3, TransactionsPerBlock: 3, Contracts: 1, Pattern: "unknown"}, {BackgroundAccounts: 8, Blocks: 3, TransactionsPerBlock: 3, Contracts: 1, StorageSlots: -1}, {BackgroundAccounts: 0, Blocks: 3, TransactionsPerBlock: 3, Contracts: 1}} {
 		if _, err := Synthetic(o); err == nil {
 			t.Fatal("invalid profile accepted")
 		}
+	}
+}
+
+// The former small-development caps are gone: a request beyond them is valid.
+func TestSyntheticAcceptsSizesBeyondFormerCaps(t *testing.T) {
+	if _, err := Synthetic(Options{BackgroundAccounts: 100_001, Blocks: 2001, TransactionsPerBlock: 1001, Contracts: 1001, StorageSlots: 4097}); err != nil {
+		t.Fatal(err)
 	}
 }
 
