@@ -1,0 +1,19 @@
+{
+  "Methods": ["archive", "path", "hybrid"],
+  "Suites": ["storage"],
+  "PrefixSnapshot": true,
+  "Engine": "leveldb",
+  "WorkloadFile": "../data/chainlike/workload.json",
+  "Resources": {
+    "ApplicationCacheBytes": 8388608,
+    "BlockCacheBytes": 2097152,
+    "GlobalWriteBufferBytes": 2097152,
+    "MaxBatchBytes": 8388608,
+    "MaxStagingBytes": 8388608,
+    "Compression": "none"
+  },
+  "Trials": 1,
+  "WarmupBlocks": 0,
+  "Queries": 1,
+  "QuerySeed": 1
+}
