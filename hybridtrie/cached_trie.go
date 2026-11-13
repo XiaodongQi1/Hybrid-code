@@ -388,7 +388,7 @@ func (b *CachedBlock) Commit() (Head, CommitStats, error) {
 		return c.head, CommitStats{}, err
 	}
 	var selections uint64
-	head, stats, err := c.store.CommitWithLayout(b.height, c.head.CommitID, []TrieUpdate{{TrieID: c.id, Tree: b.tree}}, func(key NodeKey, eligible uint16) (uint16, error) {
+	head, stats, err := c.store.CommitWithSoftLayout(b.height, c.head.CommitID, []TrieUpdate{{TrieID: c.id, Tree: b.tree}}, func(key NodeKey, eligible uint16) (uint16, error) {
 		if key.TrieID != c.id {
 			return 0, ErrConflict
 		}

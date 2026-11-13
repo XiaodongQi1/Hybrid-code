@@ -266,8 +266,10 @@ type CommitStats struct {
 	ClosureReadBytes uint64
 	// Newly materialized Hash records outside this block's changed-node digests:
 	// unchanged descendants copied so an explicitly requested Hash reference (a
-	// LayoutSelector that leaves an eligible child out of its Prefix mask) can be
-	// traversed. Cold-boundary placement never causes backfill: a modified node
+	// CommitWithLayout selector that leaves an eligible child out of its Prefix
+	// mask) can be traversed. Cold-boundary placement and the soft-layout commits
+	// (CommitWithSoftLayout, used by the cached trie/forest policies) never cause
+	// backfill: a modified node
 	// below a nonresident parent becomes Hash only when all its children already
 	// are Hash-resolvable, and otherwise keeps mixed Prefix/Hash references.
 	ClosureBackfillRecords, ClosureBackfillBytes uint64
@@ -363,7 +365,17 @@ func (s *Store) Commit(height uint64, parent [32]byte, updates []TrieUpdate) (He
 func (s *Store) CommitWithLayout(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector) (Head, CommitStats, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.commitLocked(height, parent, updates, selector, nil, false)
+	return s.commitLocked(height, parent, updates, selector, nil, false, false)
+}
+
+// CommitWithSoftLayout treats a selector's non-Prefix children as cold rather
+// than as mandatory Hash references: the parent keeps Prefix references and only
+// children modified in this commit may become Hash, so no unchanged descendant
+// is copied into the Hash column. Use CommitWithLayout to demand Hash children.
+func (s *Store) CommitWithSoftLayout(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector) (Head, CommitStats, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.commitLocked(height, parent, updates, selector, nil, false, true)
 }
 
 // CommitInitialHash atomically installs a complete initial forest as canonical
@@ -371,9 +383,9 @@ func (s *Store) CommitWithLayout(height uint64, parent [32]byte, updates []TrieU
 func (s *Store) CommitInitialHash(height uint64, parent [32]byte, updates []TrieUpdate) (Head, CommitStats, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.commitLocked(height, parent, updates, nil, nil, true)
+	return s.commitLocked(height, parent, updates, nil, nil, true, false)
 }
-func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector, forest *ForestUpdate, initialHash bool) (Head, CommitStats, error) {
+func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector, forest *ForestUpdate, initialHash, softLayout bool) (Head, CommitStats, error) {
 	started := time.Now()
 	var zero CommitStats
 	if e := s.check(); e != nil {
@@ -645,12 +657,21 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 			}
 			ctx := NodeKey{u.TrieID, change.Path, height}
 			mask := u.PrefixMask & eligible
+			// With a soft layout, children a selector left out of its Prefix mask
+			// are cold, not forced to Hash (that would copy every unchanged
+			// descendant into the Hash column): the parent keeps Prefix references
+			// and only those children that this commit modifies may switch to Hash.
+			var selectorCold uint16
 			if selector != nil {
 				policyContext := ctx
 				policyContext.Path = append([]byte(nil), ctx.Path...)
 				mask, e = selector(policyContext, eligible)
 				if e != nil {
 					return e
+				}
+				if softLayout {
+					selectorCold = eligible &^ mask
+					mask = eligible
 				}
 			}
 			record, e := recordFromFields(ctx, desc, change.Hash, mask)
@@ -693,9 +714,9 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 			}
 			// markColdChildren makes every Prefix child of this nonresident node a
 			// Hash candidate if it is modified in this commit.
-			markColdChildren := func() error {
+			markColdChildren := func(only uint16) error {
 				for i, ref := range record.Children {
-					if ref.Kind != Prefix {
+					if ref.Kind != Prefix || only&(1<<i) == 0 {
 						continue
 					}
 					loc, e := locateChild(ctx, record, i)
@@ -719,7 +740,7 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 				parent.candidate, parent.digest = true, change.Hash
 				parent.rlp = append([]byte(nil), change.RLP...)
 				parents = append(parents, parent)
-				return markColdChildren()
+				return markColdChildren(0xFFFF)
 			}
 			var raw []byte
 			var scratch uint64
@@ -747,7 +768,11 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 				parents = append(parents, newParent(scratch))
 				if s.head.Initialized && forest != nil && forest.cacheBoundary != nil &&
 					forest.cacheBoundary.find(at) < 0 && !forest.retainedPrefix[at] && (forest.baseNodes == nil || forest.baseNodes.find(at) < 0) {
-					if e = markColdChildren(); e != nil {
+					if e = markColdChildren(0xFFFF); e != nil {
+						return e
+					}
+				} else if selectorCold != 0 {
+					if e = markColdChildren(selectorCold); e != nil {
 						return e
 					}
 				}

@@ -389,3 +389,73 @@ func TestColdUpdatesNeverBackfillAndRemainVerifiable(t *testing.T) {
 		check(view.Close())
 	}
 }
+
+// A soft layout that marks every child cold never backfills, while an explicit
+// layout demanding the same Hash children does; both stay verifiable.
+func TestSoftLayoutAvoidsBackfillAndStaysVerifiable(t *testing.T) {
+	run := func(soft bool) (backfill, hashes uint64) {
+		cfg := DefaultConfig("raw-bytes/v1", "soft-layout")
+		opt := kvstore.DefaultOptions(kvstore.LevelDB)
+		cfg.Storage = &opt
+		db, err := Open(filepath.Join(t.TempDir(), "db"), cfg, true, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+		tree, _ := mpt.NewEmpty(mpt.NewMemoryStore())
+		const n = 300
+		keyOf := func(i int) []byte { return []byte{byte(i * 7), byte(i * 13 >> 3), byte(i)} }
+		for i := 0; i < n; i++ {
+			if err := tree.Update(keyOf(i), bytes.Repeat([]byte{byte(i)}, 40)); err != nil {
+				t.Fatal(err)
+			}
+		}
+		head, _, err := db.Commit(0, [32]byte{}, []TrieUpdate{{Tree: tree, PrefixMask: 0xffff}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		allHash := func(NodeKey, uint16) (uint16, error) { return 0, nil }
+		commit := db.CommitWithLayout
+		if soft {
+			commit = db.CommitWithSoftLayout
+		}
+		want := map[int][]byte{}
+		for h := uint64(1); h <= 20; h++ {
+			i := int(h*37) % n
+			want[i] = bytes.Repeat([]byte{byte(h), 1}, 20)
+			if err := tree.Update(keyOf(i), want[i]); err != nil {
+				t.Fatal(err)
+			}
+			var stats CommitStats
+			head, stats, err = commit(h, head.CommitID, []TrieUpdate{{Tree: tree, PrefixMask: 0xffff}}, allHash)
+			if err != nil {
+				t.Fatal(err)
+			}
+			backfill += stats.ClosureBackfillRecords
+			hashes += stats.HashRecords
+		}
+		root, _ := tree.Hash()
+		view, err := db.ViewAt(head.Height)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer view.Close()
+		for i, v := range want {
+			proof, err := view.Prove(0, root, keyOf(i))
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, found, err := mpt.VerifyProof(root, keyOf(i), proof)
+			if err != nil || !found || !bytes.Equal(got, v) {
+				t.Fatal("value", i, err)
+			}
+		}
+		return
+	}
+	explicitBackfill, _ := run(false)
+	softBackfill, softHashes := run(true)
+	if softBackfill != 0 || softHashes == 0 || explicitBackfill == 0 {
+		t.Fatal("explicit backfill", explicitBackfill, "soft backfill", softBackfill, "soft hashes", softHashes)
+	}
+	t.Log("explicit backfill records", explicitBackfill, "soft", softBackfill)
+}

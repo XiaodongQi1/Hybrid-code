@@ -282,15 +282,21 @@ func (u *ForestUpdate) SetTrie(id uint64, tree *mpt.Trie, prefixMask uint16) err
 }
 func (u *ForestUpdate) Commit() (Head, CommitStats, error) { return u.CommitWithLayout(nil) }
 func (u *ForestUpdate) CommitWithLayout(selector LayoutSelector) (Head, CommitStats, error) {
-	return u.commitWithMode(selector, false)
+	return u.commitWithMode(selector, false, false)
+}
+
+// CommitWithSoftLayout is CommitWithLayout with Store.CommitWithSoftLayout
+// semantics: selector-excluded children are cold, never forced to Hash.
+func (u *ForestUpdate) CommitWithSoftLayout(selector LayoutSelector) (Head, CommitStats, error) {
+	return u.commitWithMode(selector, false, true)
 }
 
 // CommitInitialHash publishes allocation/lifecycle/code metadata with a pure
 // Hash initial forest. It is valid only before the first Head is initialized.
 func (u *ForestUpdate) CommitInitialHash() (Head, CommitStats, error) {
-	return u.commitWithMode(nil, true)
+	return u.commitWithMode(nil, true, false)
 }
-func (u *ForestUpdate) commitWithMode(selector LayoutSelector, initialHash bool) (Head, CommitStats, error) {
+func (u *ForestUpdate) commitWithMode(selector LayoutSelector, initialHash, softLayout bool) (Head, CommitStats, error) {
 	s := u.store
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -301,7 +307,7 @@ func (u *ForestUpdate) commitWithMode(selector LayoutSelector, initialHash bool)
 	for _, update := range u.updates {
 		updates = append(updates, update)
 	}
-	head, stats, err := s.commitLocked(u.height, u.base.CommitID, updates, selector, u, initialHash)
+	head, stats, err := s.commitLocked(u.height, u.base.CommitID, updates, selector, u, initialHash, softLayout)
 	if err == nil || errors.Is(err, ErrUncertain) {
 		u.Abort()
 	}

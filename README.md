@@ -217,9 +217,11 @@ modified Hash children are Hash references and its unchanged children keep their
 existing Prefix or Hash source. Unchanged descendants are never copied, so cold
 placement adds no storage and `ClosureBackfillRecords` / `ClosureBackfillBytes`
 stay zero for it. In practice the conversion starts at modified leaves and
-rises while all siblings are already Hash. Those counters now measure only
-unchanged descendants copied for an explicit Hash reference requested by a
-layout selector. Old Prefix versions remain available to historical parents; a
+rises while all siblings are already Hash. The legacy `partitioned` and
+`reserved-shared` policies use the same rule (`CommitWithSoftLayout`): children
+their layout leaves out of the resident set are cold, not forced to Hash. Those
+counters now measure only unchanged descendants copied for an explicit Hash
+reference requested through `CommitWithLayout`. Old Prefix versions remain available to historical parents; a
 converted node is not also written as Prefix.
 
 ### Transaction execution and commits
