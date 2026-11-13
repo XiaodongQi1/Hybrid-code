@@ -599,24 +599,31 @@ re-stores the digests of its Hash siblings, as an archive node's RLP does.
 
 - **Prefix initialization**: siblings are Prefix, their digests are omitted, and
   the new ancestor versions are much smaller than the archive nodes.
-- **Hash initialization** (`hash-cold`): siblings are Hash, so about 88% of the
+- **Hash initialization** (`hash-cold`): siblings are Hash, so most of the
   bytes of a new ancestor Prefix record are Hash-child digests and the saving
-  is small.
+  is much smaller.
 
-A synthetic probe (4,000 keys, one resident cache slot, 200 blocks of 3 updates,
-LevelDB) wrote the same 3,130 nodes as an archive-equivalent trie, with no node
-stored in both columns and no backfill:
+Measured with `hybrid-compare` on the chain-shaped workload from
+`hybrid-genstate` (100,000 accounts, 3,000 contracts, 158,595 genesis storage
+slots, 200 blocks of 64 transactions, GoLevelDB, no compression, one trial,
+configs `hybrid-compare-chainlike-{hash,prefix}.example.json`). Growth is final
+minus initial logical state bytes (keys plus values):
 
-| Initialization | Bytes written | Versus archive-equivalent (769 KB) |
+| Method | Growth | Versus archive |
 | --- | --- | --- |
-| Prefix | 200 KB | about 74% less |
-| Hash | 668 KB | about 13% less |
+| Archive | 20.3 MB | |
+| Path | 7.3 MB | 64% less |
+| Hybrid, Hash initialization | 15.2 MB | 25% less |
+| Hybrid, Prefix initialization | 5.0 MB | 75% less |
 
-These figures come from a periodic synthetic key set and the HybridTrie layer
-alone, not real chain state or the EVM path, so treat them as an illustration of
-the mechanism, not a prediction. The saving on real state depends on how many
-unchanged siblings are already Prefix. Identical subtrees at different positions
-are stored once per position in the Prefix column but once in the Hash column.
+Prefix initialization also starts smaller (40.3 MB against 47.3 MB for Hash)
+because its initial records omit Prefix-child digests. These are one run on
+synthetic data with a per-contract storage cap (the snapshot builder rejects a
+single contract of roughly 5,000-8,000 slots), not real chain state, so treat
+them as an illustration of the mechanism, not a prediction. The saving on real
+state depends on how many unchanged siblings are already Prefix. Identical
+subtrees at different positions are stored once per position in the Prefix
+column but once in the Hash column.
 
 ### Standalone snapshot import
 
