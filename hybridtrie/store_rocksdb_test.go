@@ -591,7 +591,7 @@ func TestRocksDBPreparedLayoutAndBackfillCounters(t *testing.T) {
 		t.Fatal("failed layout published", e)
 	}
 	head, stats, e = s.CommitWithLayout(1, head.CommitID, []TrieUpdate{{0, tree, 0xffff}}, func(ctx NodeKey, eligible uint16) (uint16, error) { ctx.Path = append(ctx.Path, 9); return 0, nil })
-	if e != nil || stats.HashRecords == 0 || stats.ClosureBackfillRecords == 0 || stats.ClosureBackfillBytes == 0 {
+	if e != nil || stats.HashRecords == 0 || stats.ClosureBackfillRecords != 0 || stats.ClosureBackfillBytes != 0 {
 		t.Fatal(stats, e)
 	}
 	assertProofs(t, s, head.Height, root, map[string][]byte{"a": bytes.Repeat([]byte{3}, 40), "b": bytes.Repeat([]byte{2}, 40)}, [][]byte{[]byte("a"), []byte("b")})

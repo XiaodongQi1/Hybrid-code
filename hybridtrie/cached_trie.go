@@ -375,7 +375,7 @@ func (b *CachedBlock) Commit() (Head, CommitStats, error) {
 	if err := b.check(); err != nil {
 		return c.head, CommitStats{}, err
 	}
-	// Suppress observations through physical projection/Hash backfill as well
+	// Suppress observations through physical projection as well
 	// as policy preparation. These reads must not become execution heat.
 	b.reader.observing = false
 	defer func() {
@@ -388,7 +388,7 @@ func (b *CachedBlock) Commit() (Head, CommitStats, error) {
 		return c.head, CommitStats{}, err
 	}
 	var selections uint64
-	head, stats, err := c.store.CommitWithSoftLayout(b.height, c.head.CommitID, []TrieUpdate{{TrieID: c.id, Tree: b.tree}}, func(key NodeKey, eligible uint16) (uint16, error) {
+	head, stats, err := c.store.CommitWithLayout(b.height, c.head.CommitID, []TrieUpdate{{TrieID: c.id, Tree: b.tree}}, func(key NodeKey, eligible uint16) (uint16, error) {
 		if key.TrieID != c.id {
 			return 0, ErrConflict
 		}

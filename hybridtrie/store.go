@@ -265,17 +265,18 @@ type CommitStats struct {
 	// Logical values returned by Hash Store probes, not physical disk read bytes.
 	ClosureReadBytes uint64
 	// Newly materialized Hash records outside this block's changed-node digests:
-	// unchanged descendants copied so an explicitly requested Hash reference (a
-	// CommitWithLayout selector that leaves an eligible child out of its Prefix
-	// mask) can be traversed. Cold-boundary placement and the soft-layout commits
-	// (CommitWithSoftLayout, used by the cached trie/forest policies) never cause
-	// backfill: a modified node
+	// unchanged descendants copied into the Hash column. Commits never do this
+	// (the counters are an invariant that stays zero): a layout selector or
+	// PrefixMask only marks children cold, and a modified node
 	// below a nonresident parent becomes Hash only when all its children already
 	// are Hash-resolvable, and otherwise keeps mixed Prefix/Hash references.
 	ClosureBackfillRecords, ClosureBackfillBytes uint64
 }
 
-// LayoutSelector selects only among eligible non-embedded child slots. It is
+// LayoutSelector selects only among eligible non-embedded child slots. Slots it
+// leaves out are cold, not mandatory Hash references: an unchanged cold child
+// keeps its current physical form and only a child modified by this commit may
+// switch to Hash. It is
 // called under the commit lock, must not call Store methods or mutate the tree,
 // and does not constitute N/H cache admission by itself.
 type LayoutSelector func(NodeKey, uint16) (uint16, error)
@@ -361,21 +362,12 @@ func (s *Store) Commit(height uint64, parent [32]byte, updates []TrieUpdate) (He
 }
 
 // CommitWithLayout permits a prepared per-node layout (e.g. a fixed connected
-// cache frontier). A nil selector retains TrieUpdate.PrefixMask behavior.
+// cache frontier). A nil selector retains TrieUpdate.PrefixMask behavior. Neither
+// ever backfills unchanged descendants into the Hash column.
 func (s *Store) CommitWithLayout(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector) (Head, CommitStats, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.commitLocked(height, parent, updates, selector, nil, false, false)
-}
-
-// CommitWithSoftLayout treats a selector's non-Prefix children as cold rather
-// than as mandatory Hash references: the parent keeps Prefix references and only
-// children modified in this commit may become Hash, so no unchanged descendant
-// is copied into the Hash column. Use CommitWithLayout to demand Hash children.
-func (s *Store) CommitWithSoftLayout(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector) (Head, CommitStats, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.commitLocked(height, parent, updates, selector, nil, false, true)
+	return s.commitLocked(height, parent, updates, selector, nil, false)
 }
 
 // CommitInitialHash atomically installs a complete initial forest as canonical
@@ -383,9 +375,9 @@ func (s *Store) CommitWithSoftLayout(height uint64, parent [32]byte, updates []T
 func (s *Store) CommitInitialHash(height uint64, parent [32]byte, updates []TrieUpdate) (Head, CommitStats, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.commitLocked(height, parent, updates, nil, nil, true, false)
+	return s.commitLocked(height, parent, updates, nil, nil, true)
 }
-func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector, forest *ForestUpdate, initialHash, softLayout bool) (Head, CommitStats, error) {
+func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdate, selector LayoutSelector, forest *ForestUpdate, initialHash bool) (Head, CommitStats, error) {
 	started := time.Now()
 	var zero CommitStats
 	if e := s.check(); e != nil {
@@ -487,7 +479,6 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 		coldChildren := make(map[forestPosition]bool)
 		// hashRoots holds modified nodes this commit stores as canonical Hash.
 		hashRoots := make(map[forestPosition]bool)
-		hashCursor := u.Tree.CanonicalCursor()
 		// PendingLogicalNodes emits a preorder walk. Finalize a parent as
 		// soon as that walk leaves its subtree, keeping only O(depth) decoded
 		// parents rather than O(changed nodes) large 16-child Records.
@@ -552,7 +543,7 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 					edges[i] = boundaryEdge{Kind: boundaryHash}
 					record.Children[i] = Reference{Kind: Hash, Hash: want}
 					// The old route already authenticated this existing Hash
-					// body. Its declared closed source needs no second Get/backfill.
+					// body. Its declared closed source needs no second Get.
 					p.stats.RetainedHashEdges++
 				} else {
 					edges[i] = edgeAt(route.height, boundaryPrefix)
@@ -657,10 +648,11 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 			}
 			ctx := NodeKey{u.TrieID, change.Path, height}
 			mask := u.PrefixMask & eligible
-			// With a soft layout, children a selector left out of its Prefix mask
-			// are cold, not forced to Hash (that would copy every unchanged
-			// descendant into the Hash column): the parent keeps Prefix references
-			// and only those children that this commit modifies may switch to Hash.
+			// Children that PrefixMask or a selector leave out of the Prefix set are
+			// cold, never forced to Hash: that would copy every unchanged descendant
+			// into the Hash column. The parent keeps Prefix references and only a
+			// child modified in this commit may switch to Hash (decided by
+			// finalizeParent). The physical form of an unchanged node never changes.
 			var selectorCold uint16
 			if selector != nil {
 				policyContext := ctx
@@ -669,11 +661,9 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 				if e != nil {
 					return e
 				}
-				if softLayout {
-					selectorCold = eligible &^ mask
-					mask = eligible
-				}
 			}
+			selectorCold = eligible &^ mask
+			mask = eligible
 			record, e := recordFromFields(ctx, desc, change.Hash, mask)
 			if e != nil {
 				return e
@@ -773,17 +763,6 @@ func (s *Store) commitLocked(height uint64, parent [32]byte, updates []TrieUpdat
 					}
 				} else if selectorCold != 0 {
 					if e = markColdChildren(selectorCold); e != nil {
-						return e
-					}
-				}
-			}
-			for i, ref := range record.Children {
-				if ref.Kind == Hash {
-					loc, e := LocateChild(ctx, record, i)
-					if e != nil {
-						return e
-					}
-					if e = s.ensureHashCursor(p, snap, hashCursor, loc.Target.Path, ref.Hash, 0); e != nil {
 						return e
 					}
 				}
@@ -904,66 +883,6 @@ func readPrefix(snap diskSnapshot, key NodeKey) (Record, error) {
 		e = r.ValidateAt(key)
 	}
 	return r, e
-}
-// ensureHash stages the canonical body of expected and, recursively, every
-// descendant that has no Hash body yet, so the whole subtree is traversable
-// through the Hash column alone. It is only for explicit Hash references that a
-// layout selector demands (and the initial Hash import); it copies unchanged
-// descendants and is therefore not used for cold-boundary placement.
-func (s *Store) ensureHash(p *writePlan, snap diskSnapshot, tree *mpt.Trie, path []byte, expected mpt.Hash, depth int) error {
-	return s.ensureHashCursor(p, snap, tree.CanonicalCursor(), path, expected, depth)
-}
-func (s *Store) ensureHashCursor(p *writePlan, snap diskSnapshot, cursor *mpt.CanonicalCursor, path []byte, expected mpt.Hash, depth int) error {
-	if depth > MaxDepth {
-		return ErrLimit
-	}
-	if _, ok := p.lookup(hashColumn, expected[:]); ok {
-		return nil
-	}
-	p.stats.ClosureReads++
-	raw, e := snap.get(hashColumn, expected[:])
-	p.stats.ClosureReadBytes += uint64(len(raw))
-	if e == nil {
-		_, e = canonicalHash(raw, expected)
-		return e
-	}
-	if !errors.Is(e, ErrNotFound) {
-		return e
-	}
-	h, raw, ok, e := cursor.AtPath(path)
-	if e != nil {
-		return e
-	}
-	if !ok {
-		return ErrNotFound
-	}
-	if h != expected {
-		return ErrHashMismatch
-	}
-	if len(path) != 0 && len(raw) < 32 {
-		return ErrCorrupt
-	}
-	desc, e := mpt.InspectCanonicalNode(raw)
-	if e != nil {
-		return e
-	}
-	for i, ref := range desc.Children {
-		if !ref.Present || len(ref.Inline) != 0 {
-			continue
-		}
-		child := append(append([]byte(nil), path...), byte(i))
-		if desc.Kind == mpt.CanonicalExtension {
-			fragment, _, e := mpt.DecodeCompactPath(desc.Path)
-			if e != nil {
-				return e
-			}
-			child = append(append([]byte(nil), path...), fragment...)
-		}
-		if e = s.ensureHashCursor(p, snap, cursor, child, ref.Hash, depth+1); e != nil {
-			return e
-		}
-	}
-	return p.add(hashColumn, expected[:], raw)
 }
 func canonicalHash(raw []byte, expected mpt.Hash) (mpt.CanonicalNode, error) {
 	d, h, e := mpt.InspectCanonicalNodeWithHash(raw)

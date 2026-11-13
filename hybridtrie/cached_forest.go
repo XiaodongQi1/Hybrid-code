@@ -432,7 +432,7 @@ func (b *ForestBlock) Commit() (Head, CommitStats, error) {
 		roots[id], deltas[id] = root, delta
 	}
 	selected := map[uint64]uint64{}
-	head, stats, err := b.update.CommitWithSoftLayout(func(key NodeKey, eligible uint16) (uint16, error) {
+	head, stats, err := b.update.CommitWithLayout(func(key NodeKey, eligible uint16) (uint16, error) {
 		block := b.blocks[key.TrieID]
 		if block == nil || b.retired[key.TrieID] {
 			return 0, nil

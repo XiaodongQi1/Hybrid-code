@@ -280,7 +280,7 @@ func (b *ForestBlock) commitShared() (Head, CommitStats, error) {
 		return b.update.base, CommitStats{}, err
 	}
 	t := time.Now()
-	head, stats, err := b.update.CommitWithSoftLayout(func(key NodeKey, eligible uint16) (uint16, error) { return f.layout(key, eligible), nil })
+	head, stats, err := b.update.CommitWithLayout(func(key NodeKey, eligible uint16) (uint16, error) { return f.layout(key, eligible), nil })
 	f.stats.ProjectionNanos += stats.ProjectionNanos
 	f.stats.WriteNanos += stats.WriteNanos
 	if err != nil {

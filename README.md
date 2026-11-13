@@ -215,14 +215,14 @@ modified node stored as Hash in the same commit or an existing Hash body.
 Otherwise it is written as one Prefix record that keeps mixed references: its
 modified Hash children are Hash references and its unchanged children keep their
 existing Prefix or Hash source. Unchanged descendants are never copied, so cold
-placement adds no storage and `ClosureBackfillRecords` / `ClosureBackfillBytes`
-stay zero for it. In practice the conversion starts at modified leaves and
-rises while all siblings are already Hash. The legacy `partitioned` and
-`reserved-shared` policies use the same rule (`CommitWithSoftLayout`): children
-their layout leaves out of the resident set are cold, not forced to Hash. Those
-counters now measure only unchanged descendants copied for an explicit Hash
-reference requested through `CommitWithLayout`. Old Prefix versions remain available to historical parents; a
-converted node is not also written as Prefix.
+placement adds no storage. A node's physical form changes only when a later
+logical update modifies it; no commit ever copies an unchanged node into Hash
+Store, so `ClosureBackfillRecords` / `ClosureBackfillBytes` are an invariant that
+stays zero. In practice the conversion starts at modified leaves and rises while
+all siblings are already Hash. A `PrefixMask` or layout selector (including the
+legacy `partitioned` and `reserved-shared` policies) only marks children cold;
+it never forces an unchanged child to Hash. Old Prefix versions remain available
+to historical parents; a converted node is not also written as Prefix.
 
 ### Transaction execution and commits
 
